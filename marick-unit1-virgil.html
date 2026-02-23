@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marick — Game Dev Unit 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #171b26;
+    --surface2: #1e2433;
+    --border: #2a3045;
+    --accent: #5b8def;
+    --accent2: #7c5cbf;
+    --green: #3ecf8e;
+    --yellow: #f5c542;
+    --red: #e05252;
+    --text: #e8ecf4;
+    --muted: #8892a8;
+    --card-max: 680px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  #topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+  }
+  #topbar .brand {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+  #progress-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  #progress-bar-wrap {
+    position: fixed;
+    top: 52px; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    z-index: 99;
+  }
+  #progress-bar {
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  /* MAIN */
+  main {
+    padding-top: 80px;
+    padding-bottom: 120px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /* CARDS */
+  .card {
+    display: none;
+    width: 100%;
+    max-width: var(--card-max);
+    padding: 0 20px;
+    animation: fadeIn 0.35s ease;
+  }
+  .card.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-inner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 36px 32px;
+  }
+
+  /* LABEL CHIP */
+  .chip {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 18px;
+  }
+  .chip-gamedev  { background: rgba(91,141,239,0.15); color: var(--accent); border: 1px solid rgba(91,141,239,0.3); }
+  .chip-astro    { background: rgba(124,92,191,0.15); color: #a87de8; border: 1px solid rgba(124,92,191,0.3); }
+  .chip-win      { background: rgba(62,207,142,0.15); color: var(--green); border: 1px solid rgba(62,207,142,0.3); }
+  .chip-reflect  { background: rgba(245,197,66,0.15); color: var(--yellow); border: 1px solid rgba(245,197,66,0.3); }
+  .chip-exam     { background: rgba(224,82,82,0.15); color: var(--red); border: 1px solid rgba(224,82,82,0.3); }
+  .chip-support  { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  p {
+    color: #c5cdde;
+    margin-bottom: 12px;
+    font-weight: 400;
+  }
+  p:last-of-type { margin-bottom: 0; }
+
+  .big-question {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  .nudge {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .highlight-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 18px;
+    margin: 18px 0;
+    font-size: 15px;
+    color: #c5cdde;
+  }
+
+  .quote-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    font-style: italic;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+    border: 1px solid var(--border);
+  }
+
+  .win-banner {
+    background: rgba(62,207,142,0.08);
+    border: 1px solid rgba(62,207,142,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--green);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .step-list {
+    list-style: none;
+    margin: 16px 0;
+  }
+  .step-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+    color: #c5cdde;
+    font-size: 15px;
+    border-bottom: 1px solid var(--border);
+  }
+  .step-list li:last-child { border-bottom: none; }
+  .step-num {
+    min-width: 24px;
+    height: 24px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    margin-top: 1px;
+  }
+
+  .path-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    margin: 14px 0;
+    word-break: break-all;
+  }
+  .path-arrow {
+    color: var(--muted);
+    margin: 0 4px;
+  }
+
+  /* CODE EXAMPLE CARDS */
+  .code-good, .code-bad {
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+    line-height: 1.8;
+    border: 1px solid;
+  }
+  .code-good {
+    background: rgba(62,207,142,0.05);
+    border-color: rgba(62,207,142,0.2);
+    color: #c5cdde;
+  }
+  .code-bad {
+    background: rgba(224,82,82,0.05);
+    border-color: rgba(224,82,82,0.2);
+    color: #c5cdde;
+  }
+  .code-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .code-good .code-label { color: var(--green); }
+  .code-bad  .code-label { color: var(--red); }
+
+  .breakdown-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    color: #c5cdde;
+  }
+  .breakdown-item:last-child { border-bottom: none; }
+  .check { color: var(--green); font-size: 16px; }
+
+  /* BERNARD FIELD */
+  .contact-field {
+    margin-top: 20px;
+  }
+  .contact-field label {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .contact-field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .contact-field textarea:focus { border-color: var(--accent); }
+  #send-status {
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 20px;
+    color: var(--green);
+  }
+
+  /* BUTTONS */
+  .btn-row {
+    margin-top: 28px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.18s ease;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: #4a7de0; transform: translateY(-1px); }
+  .btn-green {
+    background: var(--green);
+    color: #0a1a12;
+  }
+  .btn-green:hover { background: #35c07f; transform: translateY(-1px); }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-send {
+    background: var(--accent2);
+    color: #fff;
+    margin-top: 10px;
+  }
+  .btn-send:hover { background: #6a4db0; }
+
+  /* POMODORO */
+  #pomo-toggle {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 9px 16px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    transition: all 0.2s;
+  }
+  #pomo-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  #pomo-panel {
+    display: none;
+    position: fixed;
+    bottom: 70px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    width: 240px;
+    z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  #pomo-panel.open { display: block; }
+
+  #pomo-panel h4 {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  #pomo-panel p.pomo-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  #pomo-display {
+    font-family: 'Syne', sans-serif;
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    margin: 10px 0;
+    letter-spacing: -0.02em;
+  }
+  #pomo-label {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .pomo-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .pomo-preset {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 4px;
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .pomo-preset:hover, .pomo-preset.active-preset { border-color: var(--accent); color: var(--accent); }
+
+  .pomo-btns {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .pomo-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 6px;
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  #pomo-start { background: var(--accent); color: #fff; }
+  #pomo-start:hover { background: #4a7de0; }
+  #pomo-reset { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  #pomo-reset:hover { color: var(--text); }
+
+  /* FINAL / DONE CARD */
+  .finish-hero {
+    text-align: center;
+    padding: 12px 0 8px;
+  }
+  .finish-icon {
+    font-size: 52px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .finish-hero h1 { font-size: 30px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    .card-inner { padding: 24px 22px 22px; }
+    h1 { font-size: 22px; }
+    .big-question { font-size: 19px; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <span class="brand">VIRGIL</span>
+  <span id="progress-text">Card 1 of 39</span>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+<!-- =================== GAME DEV SECTION =================== -->
+
+<!-- CARD 1 -->
+<div class="card active" id="c1">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Development</span>
+    <h1>Hey Marick.</h1>
+    <p>I want you to know something before we start:</p>
+    <p>You <em>can</em> be successful here. That's not just something people say. I genuinely believe it, and I've seen what you're capable of.</p>
+    <p>Sometimes it's just hard to get started. That's what this is for.</p>
+    <p>I call it a "Virgil" — like the guide in Dante's <em>Divine Comedy</em> (that's the book that contains the <em>Inferno</em>, which is honestly dope and would make a great game someday) who walks alongside you. Not doing it for you. Just walking with you.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c2')">Keep going →</button></div>
+  </div>
+</div>
+
+<!-- CARD 2 -->
+<div class="card" id="c2">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Development</span>
+    <h1>Here's the plan.</h1>
+    <p>We're going to focus hard on <strong>Game Dev</strong> — because it's right up your alley. Then we're going to put some pressure on <strong>Astronomy</strong>.</p>
+    <p>If we crush those and you want to get into Creative Writing too? Cool. But it's not the priority right now.</p>
+    <p>Today's goal is simple:</p>
+    <div class="highlight-box">
+      Let's get <strong>Unit 1 done.</strong> In one sitting if we can. You've already finished some of it — we just need to close it out.
+    </div>
+    <p>When you're done with this whole thing, <strong>message me on Teams.</strong> I'll have the next one ready for you.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c3')">Let's do it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 3 -->
+<div class="card" id="c3">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Development</span>
+    <h2>First things first.</h2>
+    <p>Open Schoology. Navigate here:</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development Section 301 <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Game Development <span class="path-arrow">(grey folder)</span> <span class="path-arrow">→</span> Unit 1: Quest Accepted
+    </div>
+    <p>Got it open? Good. Let's walk through it together, one piece at a time.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c4')">I've got it open →</button></div>
+  </div>
+</div>
+
+<!-- CARD 4 — Unit 1 Introduction -->
+<div class="card" id="c4">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Unit 1 Introduction</span>
+    <h2>First Stop: Unit 1 Introduction</h2>
+    <p>Your teacher wants you to read a short intro before anything else.</p>
+    <p>It sets up what this whole unit is about.</p>
+    <p>The big idea: there's a difference between just gaming and <em>meaningful</em> gaming. This unit is about that gap.</p>
+    <div class="highlight-box">
+      Two questions to keep in your head while you read:<br><br>
+      <strong>How is my mindset while gaming?</strong><br>
+      <strong>What skills could I improve?</strong>
+    </div>
+    <p>That's it. Go read it. Come back when you're done.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c5')">I read it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 5 — Code of Behavior intro -->
+<div class="card" id="c5">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Code of Behavior</span>
+    <h2>Next Up: Code of Behavior</h2>
+    <p>Online gaming can get toxic. You already know this.</p>
+    <p>This assignment asks you to think about that — and agree to something better.</p>
+    <p>You're going to read a short piece about why codes of conduct exist in gaming. Then you'll find the <strong>Gamer Code of Conduct</strong> — it's right inside that same assignment, underneath the reading.</p>
+    <p>It's not complicated. It's basically: be decent.</p>
+    <p>Go open that assignment now.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c6')">Done →</button></div>
+  </div>
+</div>
+
+<!-- CARD 6 — Code of Conduct checklist -->
+<div class="card" id="c6">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Code of Behavior</span>
+    <h2>Quick Check-In</h2>
+    <p>The Code of Conduct has a checklist.</p>
+    <p>Each line starts with <em>"I agree to..."</em></p>
+    <p>Read each one.</p>
+    <p>Mean it.</p>
+    <p>Come back when you're done.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c7')">I'm back →</button></div>
+  </div>
+</div>
+
+<!-- CARD 7 — Meltdowns video -->
+<div class="card" id="c7">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Video</span>
+    <h2>5 Craziest Meltdowns in eSports</h2>
+    <p>This one's actually entertaining.</p>
+    <p>You're going to watch real moments where pro gamers completely lost it.</p>
+    <p><strong>Watch it inside Schoology</strong> so it counts for credit.</p>
+    <div class="highlight-box">
+      Think about this while you watch:<br><br>
+      <em>What set them off? Could it have gone differently?</em>
+    </div>
+    <p>Go watch it now.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c8')">Watched it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 8 — What is Raging WIN -->
+<div class="card" id="c8">
+  <div class="card-inner">
+    <span class="chip chip-win">Already Done ✓</span>
+    <div class="win-banner">🏆 &nbsp;What is Raging? — 50 out of 50.</div>
+    <h2>Perfect score.</h2>
+    <p>Nothing to do here.</p>
+    <p>Just wanted to make sure you saw that.</p>
+    <p>Nice work.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c9')">Thanks, keep going →</button></div>
+  </div>
+</div>
+
+<!-- CARD 9 — Stereotype discussion -->
+<div class="card" id="c9">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Discussion</span>
+    <h2>What is a Stereotype?</h2>
+    <p>This is a discussion post. It counts.</p>
+    <p>A stereotype is when you assume something about a whole group of people based on almost nothing.</p>
+    <p>Gaming has a lot of them. So does everything else.</p>
+    <p>Your teacher wants to know what <em>you</em> think.</p>
+    <p>Write something real. A few sentences is fine.</p>
+    <p>Go post your response in Schoology now.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c10')">Posted it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 10 — Playing the Game -->
+<div class="card" id="c10">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Playing the Game</span>
+    <h2>Playing the Game</h2>
+    <p>There are thousands of games out there.</p>
+    <p>For this class, you're going to be playing <strong>Fall Guys</strong>.</p>
+    <p>Yes, really.</p>
+    <p>It looks a little silly, maybe — but it has strategy. Your teacher wants you to look at <em>how it was built</em>, not just play it.</p>
+    <p>Go read the page headed <strong>"Playing the Game"</strong> and watch the beginner's guide video inside it.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c11')">Done →</button></div>
+  </div>
+</div>
+
+<!-- CARD 11 — Favorite game discussion -->
+<div class="card" id="c11">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Discussion</span>
+    <h2>Favorite Game</h2>
+    <p>Easy one.</p>
+    <p>What's your game?</p>
+    <p>Not what you think the teacher wants to hear. Your <em>actual</em> game.</p>
+    <p>Write about it like you'd tell a friend — what it is, why you keep coming back to it.</p>
+    <p>Go post it.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c12')">Posted →</button></div>
+  </div>
+</div>
+
+<!-- CARD 12 — Goal Setting -->
+<div class="card" id="c12">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Goal Setting</span>
+    <h2>Goal Setting</h2>
+    <p>Here's something true:</p>
+    <p>Most games are built around goals. Levels. Rankings. Unlocks.</p>
+    <p>That structure is what keeps you playing.</p>
+    <p>This assignment is about how that same structure works in real life.</p>
+    <p>Go read the Goal Setting page.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c13')">Read it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 13 — Goal Setting video already done -->
+<div class="card" id="c13">
+  <div class="card-inner">
+    <span class="chip chip-win">Already Done ✓</span>
+    <div class="win-banner">✅ &nbsp;Goal-setting video — watched. Good.</div>
+    <h2>Three quick things to sit with.</h2>
+    <p>No need to write anything here. Just think about these:</p>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><span>What's a goal you actually care about?</span></li>
+      <li><span class="step-num">2</span><span>Have you ever chased someone else's goal by accident?</span></li>
+      <li><span class="step-num">3</span><span>How do you stay motivated in a class that isn't your favorite?</span></li>
+    </ul>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c14')">Moving on →</button></div>
+  </div>
+</div>
+
+<!-- CARD 14 — Your Why -->
+<div class="card" id="c14">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Goal Setting</span>
+    <h2>Your Why</h2>
+    <p>One more thought before the next assignment.</p>
+    <p>The reading said something worth remembering:</p>
+    <div class="quote-box">"Every person's life depends on the process of choosing goals to pursue."</div>
+    <p>That's not about school goals.</p>
+    <p>That's about you deciding what matters.</p>
+    <p>No assignment here. Just something to think about.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c15')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 15 — Unit Reflection intro -->
+<div class="card" id="c15">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Unit Reflection</span>
+    <h2>Unit Reflection: Here's the Deal</h2>
+    <p>Every unit in this class ends with a reflection.</p>
+    <p>It's going to ask you about your gaming — honest, real answers.</p>
+    <p>3 to 5 paragraphs. That's it.</p>
+    <p>Before you write it, we're going to walk through each question here — not to answer it, just to <em>think</em> about it first.</p>
+    <p>Ready?</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c16')">Let's do it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 16 — Q1 -->
+<div class="card" id="c16">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q1</span>
+    <p class="big-question">What game did you play?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c17')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 17 — Q1 nudge -->
+<div class="card" id="c17">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">What game did you play?</p>
+    <p class="nudge">Did you play this week? Today? It doesn't have to be something epic. Any game counts.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c18')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 18 — Q2 -->
+<div class="card" id="c18">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q2</span>
+    <p class="big-question">How long did you play?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c19')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 19 — Q2 nudge -->
+<div class="card" id="c19">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">How long did you play?</p>
+    <p class="nudge">More than you planned? Less? Did time disappear or drag?</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c20')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 20 — Q3 -->
+<div class="card" id="c20">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q3</span>
+    <p class="big-question">Did you play solo or as part of a team?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c21')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 21 — Q3 nudge -->
+<div class="card" id="c21">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">Solo or team?</p>
+    <p class="nudge">Which do you actually prefer? Does it depend on your mood?</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c22')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 22 — Q4 -->
+<div class="card" id="c22">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q4</span>
+    <p class="big-question">What game mode did you play?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c23')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 23 — Q4 nudge -->
+<div class="card" id="c23">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">What game mode?</p>
+    <p class="nudge">Is this your usual mode? Did you try something different?</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c24')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 24 — Q5 -->
+<div class="card" id="c24">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q5</span>
+    <p class="big-question">What did you accomplish during your session?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c25')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 25 — Q5 nudge -->
+<div class="card" id="c25">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">What did you accomplish?</p>
+    <p class="nudge">Big or small — it counts. A win. A new rank. Just getting through a hard level.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c26')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 26 — Q6 -->
+<div class="card" id="c26">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q6</span>
+    <p class="big-question">What could you have done better?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c27')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 27 — Q6 nudge -->
+<div class="card" id="c27">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">What could you have done better?</p>
+    <p class="nudge">Just one thing. Not a whole list. One honest thing.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c28')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 28 — Q7 -->
+<div class="card" id="c28">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q7</span>
+    <p class="big-question">What moments defined your session?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c29')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 29 — Q7 nudge -->
+<div class="card" id="c29">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">What moments defined it?</p>
+    <p class="nudge">A clutch moment. A bad call. Something that made you laugh. The moment you'll actually remember.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c30')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 30 — Q8 -->
+<div class="card" id="c30">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Reflection Q8</span>
+    <p class="big-question">Was it fun or frustrating?</p>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="go('c31')">Next →</button></div>
+  </div>
+</div>
+
+<!-- CARD 31 — Q8 nudge -->
+<div class="card" id="c31">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Think About It</span>
+    <p class="big-question">Fun or frustrating?</p>
+    <p class="nudge">Both is a real and legitimate answer. So is "I don't know yet."</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c32')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 32 — Go write it -->
+<div class="card" id="c32">
+  <div class="card-inner">
+    <span class="chip chip-reflect">Now Write It</span>
+    <h2>Now Go Write It</h2>
+    <p>You've thought through all eight questions.</p>
+    <p>Now go write your reflection in Schoology.</p>
+    <p>3 to 5 paragraphs. Honest answers. That's what your teacher is looking for.</p>
+    <p>Come back when it's submitted.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c33')">Submitted →</button></div>
+  </div>
+</div>
+
+<!-- CARD 33 — Need Help / Bernard -->
+<div class="card" id="c33">
+  <div class="card-inner">
+    <span class="chip chip-support">Need Help?</span>
+    <h2>Stuck on something?</h2>
+    <p>Can't open an assignment? Having trouble submitting?</p>
+    <p>Just let me know below and I'll get back to you.</p>
+    <div class="contact-field">
+      <label for="bernard-msg">What's going on?</label>
+      <textarea id="bernard-msg" placeholder="Type here..."></textarea>
+      <div id="send-status"></div>
+      <button class="btn btn-send" onclick="sendToBernard()">Send to Bernard →</button>
+    </div>
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn btn-ghost" onclick="go('c34')">I'm good, keep going →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD 34 — Exam intro -->
+<div class="card" id="c34">
+  <div class="card-inner">
+    <span class="chip chip-exam">Unit 1 Exam</span>
+    <h2>Almost There: Unit 1 Exam</h2>
+    <p>Last thing.</p>
+    <p>You're going to <strong>pick 3 questions</strong> and answer each one in <strong>5 to 7 sentences.</strong></p>
+    <p>Before you go in, let's look at what that actually means.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c35')">Show me →</button></div>
+  </div>
+</div>
+
+<!-- CARD 35 — Good sentences -->
+<div class="card" id="c35">
+  <div class="card-inner">
+    <span class="chip chip-exam">What Good Looks Like</span>
+    <h2>What Good Sentences Look Like</h2>
+    <p>Here's a strong example. Someone wrote about playing Fortnite:</p>
+    <div class="code-good">
+      <div class="code-label">✓ This works</div>
+      Playing Fortnite is exciting because every game feels like a new adventure. You jump from the Battle Bus, land on the island, and quickly look for weapons and shields while watching out for other players. As the safe circle gets smaller, the game becomes more intense, and you have to move, build, and think fast to stay alive. It feels great when you win a fight or help your teammates, and getting a Victory Royale is really rewarding. Even when you lose, you learn a little more each time, so the game stays fun and makes you want to try again.
+    </div>
+    <p>Notice what's happening:</p>
+    <div class="breakdown-item"><span class="check">✓</span><span>Each sentence does one job.</span></div>
+    <div class="breakdown-item"><span class="check">✓</span><span>They build on each other — there's a flow.</span></div>
+    <div class="breakdown-item"><span class="check">✓</span><span>There's a beginning, a middle, and a point.</span></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c36')">Got it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 36 — Bad sentences -->
+<div class="card" id="c36">
+  <div class="card-inner">
+    <span class="chip chip-exam">What to Avoid</span>
+    <h2>What We'd Want to Avoid</h2>
+    <p>Here's the same idea — written in a way that won't earn full credit:</p>
+    <div class="code-bad">
+      <div class="code-label">✗ This doesn't work</div>
+      Fortnite is fun. I like it. It's exciting. You land and get guns. The circle moves. I win sometimes. It's a good game.
+    </div>
+    <p>Seven sentences — but they don't go anywhere.</p>
+    <p>Each one is a dead end.</p>
+    <p>Your teacher isn't counting sentences. They're reading for <em>thought.</em></p>
+    <p>Give them something to read.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c37')">Understood →</button></div>
+  </div>
+</div>
+
+<!-- CARD 37 — Go take exam -->
+<div class="card" id="c37">
+  <div class="card-inner">
+    <span class="chip chip-exam">Unit 1 Exam</span>
+    <h2>Go Take the Exam</h2>
+    <p>You know the content.</p>
+    <p>You know what good answers look like.</p>
+    <p>Pick your 3 questions. Write like you mean it.</p>
+    <p>Go do it.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c38')">Done with Unit 1 →</button></div>
+  </div>
+</div>
+
+<!-- CARD 38 — Unit 1 done bridge -->
+<div class="card" id="c38">
+  <div class="card-inner">
+    <span class="chip chip-win">Unit 1 Complete</span>
+    <div class="win-banner">🎮 &nbsp;That's the whole unit. Seriously.</div>
+    <h2>You just finished Unit 1.</h2>
+    <p>Take a breath.</p>
+    <p>Now we're going to do one quick thing for Astronomy. Five minutes. Easy points.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c39')">Let's do it →</button></div>
+  </div>
+</div>
+
+<!-- =================== ASTRONOMY SECTION =================== -->
+
+<!-- CARD 39 — Astronomy nav -->
+<div class="card" id="c39">
+  <div class="card-inner">
+    <span class="chip chip-astro">Astronomy</span>
+    <h2>One Quick Assignment</h2>
+    <p>Just one. It's called <strong>Introduce Yourself.</strong></p>
+    <p>Worth 10 points. Takes about five minutes.</p>
+    <p>Here's where to find it:</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Intro to Astronomy <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Introduction to Astronomy <span class="path-arrow">→</span> Week 0: Astronomy Start Here <span class="path-arrow">→</span> <strong>0.07 Introduce Yourself</strong> <span class="path-arrow">(about halfway down the list)</span>
+    </div>
+    <p>Go open it now.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c40')">Found it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 40 — What to write -->
+<div class="card" id="c40">
+  <div class="card-inner">
+    <span class="chip chip-astro">Astronomy</span>
+    <h2>What to Write</h2>
+    <p>Your teacher just wants to know who you are.</p>
+    <p>Keep it simple:</p>
+    <ul class="step-list">
+      <li><span class="step-num">1</span><span>Your name.</span></li>
+      <li><span class="step-num">2</span><span>Why you're taking this class.</span></li>
+      <li><span class="step-num">3</span><span>One thing you're curious about — anything in space, the universe, whatever comes to mind.</span></li>
+    </ul>
+    <p>A few sentences. Just be real.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c41')">I posted it →</button></div>
+  </div>
+</div>
+
+<!-- CARD 41 — FINAL -->
+<div class="card" id="c41">
+  <div class="card-inner">
+    <div class="finish-hero">
+      <span class="finish-icon">🚀</span>
+      <span class="chip chip-win">Done for Today</span>
+      <h1>That's it.</h1>
+    </div>
+    <p style="text-align:center; margin-top:12px;">Game Dev Unit 1 — done.<br>Astronomy intro — done.</p>
+    <p style="text-align:center;">You showed up and you got through it.<br>That's the whole point.</p>
+    <div class="highlight-box" style="text-align:center; margin-top:20px;">
+      <strong>Message me on Teams</strong> and I'll have the next one ready.
+    </div>
+    <div class="btn-row" style="justify-content:center; margin-top:24px;">
+      <button class="btn btn-green" onclick="finishCascade()">I'm done — mark complete ✓</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- POMODORO TOGGLE -->
+<button id="pomo-toggle" onclick="togglePomo()">⏱ Focus Timer</button>
+
+<div id="pomo-panel">
+  <h4>Focus Timer</h4>
+  <p class="pomo-note">Different brains focus differently — some people lock in for 45 minutes straight, others need a short break every 10. Neither is wrong. Pick a rhythm that works for you, or ignore this completely. It's here only if it helps.</p>
+  <p class="pomo-note" style="margin-top:6px;">Also: in future Virgils, I'll occasionally drop in small <strong>coding exercises</strong> right inside the cascade — places where you can paste real code, tweak it, and watch something change. Something to look forward to.</p>
+  <div id="pomo-display">25:00</div>
+  <div id="pomo-label">Focus block</div>
+  <div class="pomo-presets">
+    <button class="pomo-preset active-preset" onclick="setPreset(25,5,this)">25 / 5</button>
+    <button class="pomo-preset" onclick="setPreset(10,2,this)">10 / 2</button>
+    <button class="pomo-preset" onclick="setPreset(45,10,this)">45 / 10</button>
+    <button class="pomo-preset" onclick="setPreset(0,0,this)">Custom</button>
+  </div>
+  <div id="custom-inputs" style="display:none; gap:6px; margin-bottom:10px;">
+    <input id="custom-focus" type="number" min="1" max="90" placeholder="Focus min" style="width:50%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; color:var(--text); font-size:13px;">
+    <input id="custom-break" type="number" min="1" max="30" placeholder="Break min" style="width:50%; background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; color:var(--text); font-size:13px;">
+    <button onclick="applyCustom()" style="width:100%; margin-top:4px; background:var(--accent); border:none; border-radius:6px; padding:7px; color:#fff; font-family:'Syne',sans-serif; font-weight:700; font-size:13px; cursor:pointer;">Set</button>
+  </div>
+  <div class="pomo-btns">
+    <button class="pomo-btn" id="pomo-start" onclick="startPomo()">Start</button>
+    <button class="pomo-btn" id="pomo-reset" onclick="resetPomo()">Reset</button>
+  </div>
+</div>
+
+<!-- =================== SCRIPTS =================== -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  emailjs.init("B-4-8kwoZ57cJRsSj");
+</script>
+
+<script>
+// ---- CARD SYSTEM ----
+const TOTAL_CARDS = 41;
+const cardOrder = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24','c25','c26','c27','c28','c29','c30','c31','c32','c33','c34','c35','c36','c37','c38','c39','c40','c41'];
+
+let currentIndex = 0;
+let sessionId = 'session-' + Date.now();
+let startTime = Date.now();
+
+function go(cardId) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  currentIndex = cardOrder.indexOf(cardId);
+  updateProgress();
+  saveToFirebase({ event: 'card_viewed', card: cardId });
+}
+
+function updateProgress() {
+  const num = currentIndex + 1;
+  document.getElementById('progress-text').textContent = `Card ${num} of ${TOTAL_CARDS}`;
+  const pct = ((num) / TOTAL_CARDS * 100).toFixed(1);
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// ---- FIREBASE ----
+const DB_URL = "https://high-desert-socrates-default-rtdb.firebaseio.com";
+const STUDENT = "marick";
+
+function firebasePath(subPath) {
+  return `${DB_URL}/students/${STUDENT}/${subPath}.json`;
+}
+
+function saveToFirebase(data) {
+  const path = firebasePath(`game-dev/unit-1/${sessionId}`);
+  const payload = { ...data, timestamp: new Date().toISOString() };
+  fetch(path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch(() => {});
+}
+
+function finishCascade() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  // Write game-dev completion
+  fetch(firebasePath(`game-dev/unit-1/${sessionId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      completed: true,
+      completedAt: new Date().toISOString(),
+      timeOnTaskSeconds: elapsed,
+      student: 'Marick Bowen'
+    })
+  }).catch(() => {});
+
+  // Write astronomy intro touch
+  fetch(firebasePath(`astronomy/week-0-intro/${sessionId}`), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      completed: true,
+      completedAt: new Date().toISOString(),
+      student: 'Marick Bowen'
+    })
+  }).catch(() => {});
+
+  // EmailJS completion
+  emailjs.send("service_nm36t4b", "template_rakwrep", {
+    student_name: "Marick Bowen",
+    cascade_name: "Game Dev Unit 1 + Astronomy Intro",
+    message: `Marick completed the Unit 1 Virgil cascade.\n\nTime on task: ${Math.round(elapsed/60)} min\nSession: ${sessionId}`,
+    to_email: "KEStudents@proton.me"
+  }).catch(() => {});
+
+  const btn = document.querySelector('.btn-green');
+  if (btn) {
+    btn.textContent = '✓ Marked complete!';
+    btn.disabled = true;
+    btn.style.background = '#2e9e68';
+  }
+}
+
+// ---- BERNARD CONTACT ----
+function sendToBernard() {
+  const msg = document.getElementById('bernard-msg').value.trim();
+  const status = document.getElementById('send-status');
+  if (!msg) { status.textContent = 'Type something first.'; status.style.color = 'var(--muted)'; return; }
+
+  status.textContent = 'Sending...';
+  status.style.color = 'var(--muted)';
+
+  emailjs.send("service_nm36t4b", "template_rakwrep", {
+    student_name: "Marick Bowen",
+    cascade_name: "Game Dev Unit 1",
+    message: `MARICK NEEDS HELP:\n\n${msg}`,
+    to_email: "KEStudents@proton.me"
+  }).then(() => {
+    status.textContent = '✓ Sent! Bernard will see this.';
+    status.style.color = 'var(--green)';
+    saveToFirebase({ bernardContact: msg, contactTime: new Date().toISOString() });
+  }).catch(() => {
+    status.textContent = 'Something went wrong. Try messaging on Teams.';
+    status.style.color = 'var(--red)';
+  });
+}
+
+// ---- POMODORO ----
+let pomoFocus = 25, pomoBreak = 5;
+let pomoSeconds = pomoFocus * 60;
+let pomoRunning = false;
+let pomoInterval = null;
+let pomoIsBreak = false;
+
+function togglePomo() {
+  const panel = document.getElementById('pomo-panel');
+  panel.classList.toggle('open');
+}
+
+function setPreset(focus, brk, btn) {
+  document.querySelectorAll('.pomo-preset').forEach(b => b.classList.remove('active-preset'));
+  btn.classList.add('active-preset');
+
+  const customDiv = document.getElementById('custom-inputs');
+  if (focus === 0) {
+    customDiv.style.display = 'flex';
+    customDiv.style.flexWrap = 'wrap';
+    return;
+  }
+  customDiv.style.display = 'none';
+  pomoFocus = focus; pomoBreak = brk;
+  resetPomo();
+}
+
+function applyCustom() {
+  const f = parseInt(document.getElementById('custom-focus').value);
+  const b = parseInt(document.getElementById('custom-break').value);
+  if (f > 0) pomoFocus = f;
+  if (b > 0) pomoBreak = b;
+  resetPomo();
+  document.getElementById('custom-inputs').style.display = 'none';
+}
+
+function startPomo() {
+  if (pomoRunning) {
+    clearInterval(pomoInterval);
+    pomoRunning = false;
+    document.getElementById('pomo-start').textContent = 'Start';
+  } else {
+    pomoRunning = true;
+    document.getElementById('pomo-start').textContent = 'Pause';
+    pomoInterval = setInterval(() => {
+      pomoSeconds--;
+      if (pomoSeconds < 0) {
+        pomoIsBreak = !pomoIsBreak;
+        pomoSeconds = (pomoIsBreak ? pomoBreak : pomoFocus) * 60;
+        document.getElementById('pomo-label').textContent = pomoIsBreak ? 'Break — step away' : 'Focus block';
+      }
+      renderPomo();
+    }, 1000);
+  }
+}
+
+function resetPomo() {
+  clearInterval(pomoInterval);
+  pomoRunning = false;
+  pomoIsBreak = false;
+  pomoSeconds = pomoFocus * 60;
+  document.getElementById('pomo-start').textContent = 'Start';
+  document.getElementById('pomo-label').textContent = 'Focus block';
+  renderPomo();
+}
+
+function renderPomo() {
+  const m = Math.floor(pomoSeconds / 60).toString().padStart(2,'0');
+  const s = (pomoSeconds % 60).toString().padStart(2,'0');
+  document.getElementById('pomo-display').textContent = `${m}:${s}`;
+}
+
+// ---- INIT ----
+saveToFirebase({ startedAt: new Date().toISOString(), student: 'Marick Bowen', cascade: 'game-dev-unit-1' });
+updateProgress();
+</script>
+</body>
+</html>

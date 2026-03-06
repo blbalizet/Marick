@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marick — Virgil 3 Part B</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0f1117;--surface:#171b26;--surface2:#1e2433;--border:#2a3045;--accent:#5b8def;--accent2:#7c5cbf;--green:#3ecf8e;--yellow:#f5c542;--red:#e05252;--text:#e8ecf4;--muted:#8892a8;--card-max:680px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.7;min-height:100vh;}
+  #topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;}
+  #topbar .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--accent);letter-spacing:.04em;}
+  #progress-text{font-size:13px;color:var(--muted);font-weight:500;}
+  #progress-bar-wrap{position:fixed;top:52px;left:0;right:0;height:3px;background:var(--border);z-index:99;}
+  #progress-bar{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease;}
+  main{padding-top:80px;padding-bottom:120px;display:flex;justify-content:center;}
+  .card{display:none;width:100%;max-width:var(--card-max);padding:0 20px;animation:fadeIn .35s ease;}
+  .card.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .card-inner{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 36px 32px;}
+  .chip{display:inline-block;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:18px;}
+  .chip-gamedev{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+  .chip-tech{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+  .chip-win{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+  .chip-yellow{background:rgba(245,197,66,.15);color:var(--yellow);border:1px solid rgba(245,197,66,.3);}
+  .chip-video{background:rgba(224,82,82,.15);color:#e87d7d;border:1px solid rgba(224,82,82,.3);}
+  .chip-summary{background:rgba(124,92,191,.15);color:#a87de8;border:1px solid rgba(124,92,191,.3);}
+  h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:14px;}
+  p{color:#c5cdde;margin-bottom:12px;}
+  p:last-of-type{margin-bottom:0;}
+  .highlight-box{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 18px;margin:18px 0;font-size:15px;color:#c5cdde;}
+  .win-banner{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--green);font-weight:600;font-size:15px;}
+  .answer-field{margin:16px 0;}
+  .answer-field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px;font-weight:500;}
+  .answer-field input[type=text],.answer-field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+  .answer-field textarea{resize:vertical;}
+  .answer-field input:focus,.answer-field textarea:focus{border-color:var(--accent);}
+  .summary-block{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px 20px;margin:14px 0;}
+  .summary-block h3{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;}
+  .summary-item{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;color:#c5cdde;}
+  .summary-item:last-child{border-bottom:none;}
+  .bullet{color:var(--accent);font-weight:700;min-width:14px;}
+  .path-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:'Courier New',monospace;font-size:13px;color:var(--accent);margin:14px 0;word-break:break-all;}
+  .path-arrow{color:var(--muted);margin:0 4px;}
+  .btn-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:12px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s ease;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#4a7de0;transform:translateY(-1px);}
+  .btn-green{background:var(--green);color:#0a1a12;}
+  .btn-green:hover{background:#35c07f;transform:translateY(-1px);}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:13px;padding:8px 14px;}
+  .btn-back:hover{color:var(--text);border-color:var(--muted);}
+  .btn-yellow{background:var(--yellow);color:#1a1400;}
+  .btn-yellow:hover{background:#e0b030;}
+  .finish-hero{text-align:center;padding:12px 0 8px;}
+  .finish-icon{font-size:52px;margin-bottom:12px;display:block;}
+  /* POMODORO */
+  #pomo-toggle{position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+  #pomo-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  #pomo-panel{display:none;position:fixed;bottom:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:240px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+  #pomo-panel.open{display:block;}
+  #pomo-panel h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+  #pomo-panel p.pomo-note{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+  #pomo-display{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--text);text-align:center;margin:10px 0;letter-spacing:-.02em;}
+  #pomo-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .pomo-presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+  .pomo-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+  .pomo-preset:hover,.pomo-preset.active-preset{border-color:var(--accent);color:var(--accent);}
+  .pomo-btns{display:flex;gap:6px;margin-top:10px;}
+  .pomo-btn{flex:1;padding:8px;border-radius:6px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  #pomo-start{background:var(--accent);color:#fff;}
+  #pomo-reset{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  @media(max-width:600px){.card-inner{padding:24px 20px 22px;}h1{font-size:22px;}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="brand">VIRGIL 3 — Part B</span>
+  <span id="progress-text">Card 1 of 22</span>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+<!-- C1: Unit 3 Welcome -->
+<div class="card active" id="c1">
+  <div class="card-inner">
+    <span class="chip chip-tech">Unit 3 — Tech</span>
+    <h1>Welcome to Unit 3.</h1>
+    <p>This one is called <strong>Tech</strong>. Less game design theory, more how computers actually work.</p>
+    <p>We're going to cover routers, firmware, and troubleshooting. It sounds dry — but some of this is actually useful if you ever want to build or fix anything.</p>
+    <p>Let's start easy. Go read the first two short pages of Unit 3 in Schoology, and watch the <strong>1 minute 31 second video on routers.</strong> Come back when you're done.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="go('c2')">Read the pages + watched the video →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C2: Firmware video -->
+<div class="card" id="c2">
+  <div class="card-inner">
+    <span class="chip chip-video">Video</span>
+    <h2>Now the firmware video.</h2>
+    <p>Watch the firmware video in Schoology. When you come back, I'm going to ask you for just a few words about what firmware is.</p>
+    <p>You don't need to write an essay. One sentence. Whatever stuck.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c1')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c3')">I've watched the video →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C3: Firmware field -->
+<div class="card" id="c3">
+  <div class="card-inner">
+    <span class="chip chip-tech">Firmware</span>
+    <h2>Tell me something about firmware.</h2>
+    <p>Just a few words — no more than a sentence. What is it? What does it do? What did you take away?</p>
+    <div class="answer-field">
+      <label>Firmware is...</label>
+      <input type="text" id="f-firmware" placeholder="A few words or a sentence...">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c2')">← Back</button>
+      <button class="btn btn-primary" onclick="saveFieldAndGo('f-firmware','firmware','c4')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C4: Router quiz -->
+<div class="card" id="c4">
+  <div class="card-inner">
+    <span class="chip chip-tech">Quiz Time</span>
+    <h2>Go crush the Router Basics quiz.</h2>
+    <p>It's in Schoology. Come back and click when you're done.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c3')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c5')">I've finished the quiz →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C5: Break check -->
+<div class="card" id="c5">
+  <div class="card-inner">
+    <span class="chip chip-yellow">Check In</span>
+    <h2>Alright. How are you feeling?</h2>
+    <p>Have you taken a break? If not, take one now. Heck, even if you have — take one anyway.</p>
+    <p>Go for a walk. Drink some water. Watch an episode of Game Theory or Dead Meat on YouTube.</p>
+    <p>Then come back and tell me: still got some in the tank?</p>
+    <div class="btn-row" style="margin-top:28px;">
+      <button class="btn btn-back btn-ghost" onclick="go('c4')">← Back</button>
+      <button class="btn btn-yellow" onclick="go('c6')">Nope. I'm beat. Done for the day.</button>
+      <button class="btn btn-primary" onclick="go('c8')">I'm good — let's go.</button>
+    </div>
+  </div>
+</div>
+
+<!-- C6: Done for the day -->
+<div class="card" id="c6">
+  <div class="card-inner">
+    <span class="chip chip-win">That's Legit</span>
+    <h1>Great job today.</h1>
+    <p>Seriously. Come back in the morning, hit the button below first thing, and pick up where you left off.</p>
+    <p>Text me when you're done for the day so I know where you landed.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c5')">← Back</button>
+      <button class="btn btn-green" onclick="go('c7')">Ok, I'll come back tomorrow →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C7: Morning return -->
+<div class="card" id="c7">
+  <div class="card-inner">
+    <span class="chip chip-win">Good Morning</span>
+    <h1>Welcome back.</h1>
+    <p>Ready to finish this thing?</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="go('c8')">Let's go →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C8: Keep going note -->
+<div class="card" id="c8">
+  <div class="card-inner">
+    <span class="chip chip-tech">Unit 3 — Tech</span>
+    <h2>One more thing before we push on.</h2>
+    <p>At any point — if you feel like taking a break until tomorrow, feel free. You know your own pace better than I do.</p>
+    <p>If you've got the juice to keep going, great. If not, that's just as good. We can adjust pace in a few days. Right now you're doing great.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c5')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c9')">Understood. Let's do it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C9: Troubleshooting video -->
+<div class="card" id="c9">
+  <div class="card-inner">
+    <span class="chip chip-video">Troubleshooting</span>
+    <h2>This is what I need.</h2>
+    <p>Go to the <strong>Troubleshooting page</strong> in Schoology and watch the video. It's 13 minutes — meet me back here in about 20.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c8')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c10')">OK, I've watched the video →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C10: Troubleshooting quiz -->
+<div class="card" id="c10">
+  <div class="card-inner">
+    <span class="chip chip-tech">Quiz</span>
+    <h2>Go knock out the troubleshooting quiz.</h2>
+    <p>The video is still fresh — now's the right moment. Come back when you're done.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c9')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c11')">Quiz: done →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C11: Common problems intro -->
+<div class="card" id="c11">
+  <div class="card-inner">
+    <span class="chip chip-tech">Questions</span>
+    <h2>Now let me ask you some things.</h2>
+    <p>First up: what are some common problems you hear about with computers?</p>
+    <p>List 3 to 6. No need for full sentences — a few words each is fine.</p>
+    <div class="answer-field">
+      <label>Problem 1</label>
+      <input type="text" id="f-prob1" placeholder="e.g. slow startup...">
+    </div>
+    <div class="answer-field">
+      <label>Problem 2</label>
+      <input type="text" id="f-prob2" placeholder="">
+    </div>
+    <div class="answer-field">
+      <label>Problem 3</label>
+      <input type="text" id="f-prob3" placeholder="">
+    </div>
+    <div class="answer-field">
+      <label>Problem 4 (optional)</label>
+      <input type="text" id="f-prob4" placeholder="">
+    </div>
+    <div class="answer-field">
+      <label>Problem 5 (optional)</label>
+      <input type="text" id="f-prob5" placeholder="">
+    </div>
+    <div class="answer-field">
+      <label>Problem 6 (optional)</label>
+      <input type="text" id="f-prob6" placeholder="">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c10')">← Back</button>
+      <button class="btn btn-primary" onclick="saveProblemsAndGo()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C12: How do problems start -->
+<div class="card" id="c12">
+  <div class="card-inner">
+    <span class="chip chip-tech">Questions</span>
+    <h2>How do these problems start?</h2>
+    <p>Give me a sentence or two.</p>
+    <div class="answer-field">
+      <textarea id="f-causes" rows="3" placeholder="These problems start from..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c11')">← Back</button>
+      <button class="btn btn-primary" onclick="saveFieldAndGo('f-causes','causes','c13')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C13: Prevention -->
+<div class="card" id="c13">
+  <div class="card-inner">
+    <span class="chip chip-tech">Questions</span>
+    <h2>What can be done to prevent issues?</h2>
+    <p>Three things. A couple of lines each is plenty.</p>
+    <div class="answer-field">
+      <label>Prevention 1</label>
+      <textarea id="f-prev1" rows="2" placeholder=""></textarea>
+    </div>
+    <div class="answer-field">
+      <label>Prevention 2</label>
+      <textarea id="f-prev2" rows="2" placeholder=""></textarea>
+    </div>
+    <div class="answer-field">
+      <label>Prevention 3</label>
+      <textarea id="f-prev3" rows="2" placeholder=""></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c12')">← Back</button>
+      <button class="btn btn-primary" onclick="savePreventionAndGo()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C14: Repair / troubleshoot from home -->
+<div class="card" id="c14">
+  <div class="card-inner">
+    <span class="chip chip-tech">Questions</span>
+    <h2>How can you repair and troubleshoot issues from home?</h2>
+    <div class="answer-field">
+      <textarea id="f-repair" rows="5" placeholder="Write as much or as little as you want..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c13')">← Back</button>
+      <button class="btn btn-primary" onclick="saveFieldAndGo('f-repair','repair','c15')">Done →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C15: Full summary -->
+<div class="card" id="c15">
+  <div class="card-inner">
+    <span class="chip chip-summary">Your Notes</span>
+    <h2>Here's everything you wrote.</h2>
+    <p>This is the raw material for your discussion post. Take a look.</p>
+    <div id="summary-output"></div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c14')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c16')">And now you're almost all the way there →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C16: PC Problems discussion -->
+<div class="card" id="c16">
+  <div class="card-inner">
+    <span class="chip chip-tech">Discussion Post</span>
+    <h2>Go find the PC Problems discussion.</h2>
+    <p>See? You're already halfway there — you've done all the thinking. Now just turn what you wrote into sentences.</p>
+    <p>Start the paragraph however you want. If you're drawing a blank, feel free to start with:</p>
+    <div class="highlight-box">
+      <em>"The most common problems I hear about with computers are…"</em><br>
+      then transition with <em>"These problems start from…"</em>
+    </div>
+    <p>Give the teacher <strong>5 to 7 sentences</strong> made from what you already wrote. Then reply to at least <strong>3 students.</strong> Nothing wrong with pushing a bit.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c15')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c17')">Alright, done →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C17: Break time -->
+<div class="card" id="c17">
+  <div class="card-inner">
+    <span class="chip chip-yellow">Time to Break</span>
+    <h2>Time to break, my man.</h2>
+    <p>If it's night, go to sleep. Or play a game. Or whatever.</p>
+    <p>Step back and pat yourself on the back. Be proud.</p>
+    <p>Let me know you're done and I'll send the next Virgil. Hopefully it won't take this long next time.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c16')">← Back</button>
+      <button class="btn btn-yellow" onclick="go('c18')">Ok, I'll break →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C18: Final -->
+<div class="card" id="c18">
+  <div class="card-inner">
+    <div class="finish-hero">
+      <span class="finish-icon">🥤</span>
+      <span class="chip chip-win">Virgil 3 — Complete</span>
+      <h1>Great job, Marick.</h1>
+    </div>
+    <p style="text-align:center;margin-top:12px;">I'll catch you tomorrow.</p>
+    <div class="highlight-box" style="text-align:center;margin-top:20px;">
+      <strong>Message me on Teams</strong> when you're done for the day.
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:24px;">
+      <button class="btn btn-back btn-ghost" onclick="go('c17')">← Back</button>
+      <button class="btn btn-green" onclick="finishCascade()">Mark complete ✓</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button id="pomo-toggle" onclick="togglePomo()">⏱ Focus Timer</button>
+<div id="pomo-panel">
+  <h4>Focus Timer</h4>
+  <p class="pomo-note">Different brains focus differently. Use this only if it helps — tool, not a rule.</p>
+  <div id="pomo-display">25:00</div>
+  <div id="pomo-label">Focus block</div>
+  <div class="pomo-presets">
+    <button class="pomo-preset active-preset" onclick="setPreset(25,5,this)">25 / 5</button>
+    <button class="pomo-preset" onclick="setPreset(10,2,this)">10 / 2</button>
+    <button class="pomo-preset" onclick="setPreset(45,10,this)">45 / 10</button>
+    <button class="pomo-preset" onclick="setPreset(0,0,this)">Custom</button>
+  </div>
+  <div id="custom-inputs" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+    <input id="custom-focus" type="number" min="1" max="90" placeholder="Focus min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <input id="custom-break" type="number" min="1" max="30" placeholder="Break min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <button onclick="applyCustom()" style="width:100%;margin-top:4px;background:var(--accent);border:none;border-radius:6px;padding:7px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Set</button>
+  </div>
+  <div class="pomo-btns">
+    <button class="pomo-btn" id="pomo-start" onclick="startPomo()">Start</button>
+    <button class="pomo-btn" id="pomo-reset" onclick="resetPomo()">Reset</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("B-4-8kwoZ57cJRsSj");</script>
+<script>
+const TOTAL_CARDS = 18;
+const cardOrder = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18'];
+let currentIndex = 0;
+const sessionId = 'session-' + Date.now();
+const startTime = Date.now();
+const savedAnswers = {};
+
+function go(cardId) {
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  currentIndex = cardOrder.indexOf(cardId);
+  updateProgress();
+  restoreFields();
+  if (cardId === 'c15') buildSummary();
+  saveToFirebase({event:'card_viewed',card:cardId});
+}
+
+function restoreFields() {
+  Object.keys(savedAnswers).forEach(fid=>{
+    const el=document.getElementById(fid);
+    if(el) el.value=savedAnswers[fid];
+  });
+}
+
+function updateProgress() {
+  const num = currentIndex + 1;
+  document.getElementById('progress-text').textContent = `Card ${num} of ${TOTAL_CARDS}`;
+  document.getElementById('progress-bar').style.width = (num/TOTAL_CARDS*100).toFixed(1)+'%';
+}
+
+function saveFieldAndGo(fieldId, key, nextCard) {
+  const el = document.getElementById(fieldId);
+  const val = el ? el.value.trim() : '';
+  savedAnswers[fieldId] = val;
+  saveToFirebase({event:'field_saved',field:key,value:val});
+  go(nextCard);
+}
+
+function saveProblemsAndGo() {
+  ['f-prob1','f-prob2','f-prob3','f-prob4','f-prob5','f-prob6'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) savedAnswers[id]=el.value.trim();
+  });
+  saveToFirebase({event:'problems_saved', problems: getProblems()});
+  go('c12');
+}
+
+function savePreventionAndGo() {
+  ['f-prev1','f-prev2','f-prev3'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) savedAnswers[id]=el.value.trim();
+  });
+  saveToFirebase({event:'prevention_saved'});
+  go('c14');
+}
+
+function getProblems() {
+  return ['f-prob1','f-prob2','f-prob3','f-prob4','f-prob5','f-prob6']
+    .map(id=>savedAnswers[id]||'').filter(v=>v);
+}
+
+function buildSummary() {
+  const problems = getProblems();
+  const causes = savedAnswers['f-causes'] || '';
+  const prev = ['f-prev1','f-prev2','f-prev3'].map(id=>savedAnswers[id]||'').filter(v=>v);
+  const repair = savedAnswers['f-repair'] || '';
+
+  let html = '';
+
+  if (problems.length) {
+    html += `<div class="summary-block"><h3>Common computer problems:</h3>`;
+    problems.forEach(p=>{ html+=`<div class="summary-item"><span class="bullet">•</span><span>${p}</span></div>`; });
+    html += `</div>`;
+  }
+
+  if (causes) {
+    html += `<div class="summary-block"><h3>These problems start from:</h3><p style="font-size:15px;color:#c5cdde;margin:0;">${causes}</p></div>`;
+  }
+
+  if (prev.length) {
+    html += `<div class="summary-block"><h3>Ways to prevent issues:</h3>`;
+    prev.forEach((p,i)=>{ html+=`<div class="summary-item"><span class="bullet">${i+1}.</span><span>${p}</span></div>`; });
+    html += `</div>`;
+  }
+
+  if (repair) {
+    html += `<div class="summary-block"><h3>How to troubleshoot from home:</h3><p style="font-size:15px;color:#c5cdde;margin:0;">${repair}</p></div>`;
+  }
+
+  if (!html) html = `<p style="color:var(--muted);">Nothing saved yet — go back and fill in the fields.</p>`;
+  document.getElementById('summary-output').innerHTML = html;
+}
+
+const DB_URL = "https://high-desert-socrates-default-rtdb.firebaseio.com";
+function saveToFirebase(data) {
+  fetch(`${DB_URL}/students/marick/game-dev/virgil3b/${sessionId}.json`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({...data,timestamp:new Date().toISOString()})
+  }).catch(()=>{});
+}
+
+function finishCascade() {
+  const elapsed = Math.round((Date.now()-startTime)/1000);
+  const allAnswers = {...savedAnswers};
+  fetch(`${DB_URL}/students/marick/game-dev/virgil3b/${sessionId}.json`,{
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({completed:true,completedAt:new Date().toISOString(),timeOnTaskSeconds:elapsed,student:'Marick Bowen',answers:allAnswers})
+  }).catch(()=>{});
+
+  const problems = getProblems().join(', ');
+  emailjs.send("service_nm36t4b","template_rakwrep",{
+    student_name:"Marick Bowen",
+    cascade_name:"Virgil 3 — Part B (Unit 3 Tech + Troubleshooting)",
+    message:`Marick completed Virgil 3 Part B.\n\nTime: ${Math.round(elapsed/60)} min\nSession: ${sessionId}\n\nFirmware: ${savedAnswers['f-firmware']||''}\nComputer problems: ${problems}\nCauses: ${savedAnswers['f-causes']||''}\nRepair: ${savedAnswers['f-repair']||''}`,
+    to_email:"KEStudents@proton.me"
+  }).catch(()=>{});
+
+  const btn = document.querySelector('.btn-green');
+  if(btn){btn.textContent='✓ Virgil 3 complete!';btn.disabled=true;btn.style.background='#2e9e68';}
+}
+
+// POMODORO
+let pomoFocus=25,pomoBreak=5,pomoSeconds=25*60,pomoRunning=false,pomoInterval=null,pomoIsBreak=false;
+function togglePomo(){document.getElementById('pomo-panel').classList.toggle('open');}
+function setPreset(f,b,btn){document.querySelectorAll('.pomo-preset').forEach(x=>x.classList.remove('active-preset'));btn.classList.add('active-preset');const cd=document.getElementById('custom-inputs');if(f===0){cd.style.display='flex';return;}cd.style.display='none';pomoFocus=f;pomoBreak=b;resetPomo();}
+function applyCustom(){const f=parseInt(document.getElementById('custom-focus').value);const b=parseInt(document.getElementById('custom-break').value);if(f>0)pomoFocus=f;if(b>0)pomoBreak=b;resetPomo();document.getElementById('custom-inputs').style.display='none';}
+function startPomo(){if(pomoRunning){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomo-start').textContent='Start';}else{pomoRunning=true;document.getElementById('pomo-start').textContent='Pause';pomoInterval=setInterval(()=>{pomoSeconds--;if(pomoSeconds<0){pomoIsBreak=!pomoIsBreak;pomoSeconds=(pomoIsBreak?pomoBreak:pomoFocus)*60;document.getElementById('pomo-label').textContent=pomoIsBreak?'Break — step away':'Focus block';}renderPomo();},1000);}}
+function resetPomo(){clearInterval(pomoInterval);pomoRunning=false;pomoIsBreak=false;pomoSeconds=pomoFocus*60;document.getElementById('pomo-start').textContent='Start';document.getElementById('pomo-label').textContent='Focus block';renderPomo();}
+function renderPomo(){const m=Math.floor(pomoSeconds/60).toString().padStart(2,'0');const s=(pomoSeconds%60).toString().padStart(2,'0');document.getElementById('pomo-display').textContent=`${m}:${s}`;}
+
+saveToFirebase({startedAt:new Date().toISOString(),student:'Marick Bowen',cascade:'virgil3-part-b'});
+updateProgress();
+</script>
+</body>
+</html>

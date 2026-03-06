@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marick — Virgil 3 Part A</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f1117; --surface:#171b26; --surface2:#1e2433; --border:#2a3045;
+    --accent:#5b8def; --accent2:#7c5cbf; --green:#3ecf8e; --yellow:#f5c542;
+    --red:#e05252; --text:#e8ecf4; --muted:#8892a8; --card-max:680px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.7;min-height:100vh;}
+  #topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;}
+  #topbar .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--accent);letter-spacing:.04em;}
+  #progress-text{font-size:13px;color:var(--muted);font-weight:500;}
+  #progress-bar-wrap{position:fixed;top:52px;left:0;right:0;height:3px;background:var(--border);z-index:99;}
+  #progress-bar{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease;}
+  main{padding-top:80px;padding-bottom:120px;display:flex;justify-content:center;}
+  .card{display:none;width:100%;max-width:var(--card-max);padding:0 20px;animation:fadeIn .35s ease;}
+  .card.active{display:block;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .card-inner{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 36px 32px;}
+  .chip{display:inline-block;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:18px;}
+  .chip-gamedev{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+  .chip-win{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+  .chip-vocab{background:rgba(124,92,191,.15);color:#a87de8;border:1px solid rgba(124,92,191,.3);}
+  .chip-arch{background:rgba(245,197,66,.15);color:var(--yellow);border:1px solid rgba(245,197,66,.3);}
+  .chip-video{background:rgba(224,82,82,.15);color:#e87d7d;border:1px solid rgba(224,82,82,.3);}
+  h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:16px;}
+  h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:14px;}
+  .word-display{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--accent);letter-spacing:-.02em;margin:20px 0;text-align:center;}
+  .word-sub{text-align:center;font-size:14px;color:var(--muted);margin-bottom:24px;}
+  p{color:#c5cdde;margin-bottom:12px;}
+  p:last-of-type{margin-bottom:0;}
+  .def-box{background:var(--surface2);border-radius:12px;padding:20px 22px;margin:16px 0;font-size:15px;color:#c5cdde;line-height:1.75;border:1px solid var(--border);}
+  .def-box strong{color:var(--text);}
+  .what-is{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:var(--muted);margin-bottom:6px;}
+  .what-is-def{font-size:15px;color:#c5cdde;line-height:1.7;margin-bottom:16px;}
+  .highlight-box{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 18px;margin:18px 0;font-size:15px;color:#c5cdde;}
+  .win-banner{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--green);font-weight:600;font-size:15px;}
+  .rep-note{background:rgba(245,197,66,.07);border:1px solid rgba(245,197,66,.2);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#e0d0a0;line-height:1.6;}
+  .answer-field{margin:16px 0;}
+  .answer-field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px;font-weight:500;}
+  .answer-field input[type=text],.answer-field textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+  .answer-field input[type=text]:focus,.answer-field textarea:focus{border-color:var(--accent);}
+  .answer-field textarea{resize:vertical;min-height:80px;}
+  .field-err{font-size:13px;color:var(--red);margin-top:6px;min-height:18px;}
+  .btn-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:12px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s ease;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:#4a7de0;transform:translateY(-1px);}
+  .btn-green{background:var(--green);color:#0a1a12;}
+  .btn-green:hover{background:#35c07f;transform:translateY(-1px);}
+  .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:13px;padding:8px 14px;}
+  .btn-back:hover{color:var(--text);border-color:var(--muted);}
+  .step-list{list-style:none;margin:16px 0;}
+  .step-list li{display:flex;align-items:flex-start;gap:12px;padding:8px 0;color:#c5cdde;font-size:15px;border-bottom:1px solid var(--border);}
+  .step-list li:last-child{border-bottom:none;}
+  .step-num{min-width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px;}
+  .finish-hero{text-align:center;padding:12px 0 8px;}
+  .finish-icon{font-size:52px;margin-bottom:12px;display:block;}
+  /* POMODORO */
+  #pomo-toggle{position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+  #pomo-toggle:hover{border-color:var(--accent);color:var(--accent);}
+  #pomo-panel{display:none;position:fixed;bottom:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:240px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+  #pomo-panel.open{display:block;}
+  #pomo-panel h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+  #pomo-panel p.pomo-note{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+  #pomo-display{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--text);text-align:center;margin:10px 0;letter-spacing:-.02em;}
+  #pomo-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px;}
+  .pomo-presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+  .pomo-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+  .pomo-preset:hover,.pomo-preset.active-preset{border-color:var(--accent);color:var(--accent);}
+  .pomo-btns{display:flex;gap:6px;margin-top:10px;}
+  .pomo-btn{flex:1;padding:8px;border-radius:6px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+  #pomo-start{background:var(--accent);color:#fff;}
+  #pomo-reset{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+  @media(max-width:600px){.card-inner{padding:24px 20px 22px;}h1{font-size:22px;}.word-display{font-size:36px;}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="brand">VIRGIL 3 — Part A</span>
+  <span id="progress-text">Card 1 of 42</span>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+<!-- C1: Welcome Part 1 -->
+<div class="card active" id="c1">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Development</span>
+    <h1>First of all —</h1>
+    <p><strong>Fantastic. Fantastic. FanTASTIC work.</strong></p>
+    <p>Not everything you handed in has been graded yet, but everything that has been graded? Got an A.</p>
+    <p>Here's some more great news: the class has been <strong>zeroed out.</strong> If you don't know what that means — it means that from here on out, every single point you earn on an assignment moves you up. Nothing pulls you down.</p>
+    <p>If an assignment is worth 100 points and you get a 5, that's not an F. That's 5 points toward passing. That's it. Every step is a step up.</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="go('c2')">Keep reading →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C2: Welcome Part 2 -->
+<div class="card" id="c2">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Development</span>
+    <h2>Here's the plan for today.</h2>
+    <p>We're aiming both barrels at Game Dev. Let's get that win under our belts. Once you're passing, you and I can talk about what's next — stay in Game Dev and push the grade higher, or jump into Astronomy. But for now: Game Dev.</p>
+    <p>This Virgil is a bit longer than usual. Some of it might cover stuff you've already done — that's okay. Don't redo the lessons, but go ahead and fill in the fields. There's actually science behind why that kind of repetition helps. I'll explain it another time, but trust me on it for now.</p>
+    <div class="highlight-box">
+      Do the whole thing today if you can — but take breaks. Get up. Stretch. Walk around. Watch a YouTube. Play something. Your brain needs it. Sitting and cramming for 5 hours straight is like pouring a gallon of water into a 4-ounce glass. You fill it fast — and then it all goes down the drain.
+    </div>
+    <p>If you don't finish everything today, that's fine. Just text me when you're done for the day and we'll figure out tomorrow.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c1')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c3')">Let's go →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C3: Vocab Intro -->
+<div class="card" id="c3">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Vocabulary</span>
+    <h2>Some quick vocab.</h2>
+    <p>Six words. You probably know some of them already.</p>
+    <p>Here's how this works: I'll show you the word, then the definition, then ask you what the word is. It sounds easy — and honestly, it is. But that's kind of the point. Easy repetition is part of how memory actually works.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c2')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c4')">Start vocab →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GENRE ===== -->
+<!-- C4: Word -->
+<div class="card" id="c4">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 1 of 6</span>
+    <div class="word-display">Genre</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c3')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c5')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C5: Definition -->
+<div class="card" id="c5">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 1 of 6</span>
+    <div class="def-box">
+      A <strong>genre</strong> is a category of games that share similar types of gameplay, goals, or themes — such as shooters, strategy games, or role-playing games.<br><br>
+      Game designers use genres to help players know what kind of experience to expect from a game.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c4')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c6')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C6: What is... Genre -->
+<div class="card" id="c6">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a category of games that share similar types of gameplay, goals, or themes, such as shooters, strategy games, or role-playing games? Game designers use these to help players know what kind of experience to expect.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-genre" placeholder="Your answer...">
+      <div class="field-err" id="err-genre"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c5')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-genre','err-genre','c7')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RTS ===== -->
+<!-- C7: Word -->
+<div class="card" id="c7">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 2 of 6</span>
+    <div class="word-display">RTS</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c6')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c8')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C8: Definition -->
+<div class="card" id="c8">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 2 of 6</span>
+    <div class="def-box">
+      <strong>RTS</strong> stands for Real-Time Strategy — a genre where players build bases, gather resources, and control units in real time (without taking turns) to defeat opponents.<br><br>
+      Unlike turn-based games, RTS games require quick decisions and constant multitasking — managing an economy while fighting battles at the same time.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c7')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c9')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C9: What is... RTS -->
+<div class="card" id="c9">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a genre where players build bases, gather resources, and control units in real time to defeat opponents — no taking turns, just constant multitasking?</div>
+    <div class="answer-field">
+      <label>Type the word (or abbreviation):</label>
+      <input type="text" id="f-rts" placeholder="Your answer...">
+      <div class="field-err" id="err-rts"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c8')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-rts','err-rts','c10')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MMORPG ===== -->
+<!-- C10: Word -->
+<div class="card" id="c10">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 3 of 6</span>
+    <div class="word-display" style="font-size:32px;">MMORPG</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c9')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c11')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C11: Definition -->
+<div class="card" id="c11">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 3 of 6</span>
+    <div class="def-box">
+      A <strong>MMORPG</strong> is a Massively Multiplayer Online Role-Playing Game — where many players control their own characters in a shared, persistent online world.<br><br>
+      Players level up stats, complete quests, and work together or against each other in a story-driven environment — like huge fantasy worlds with cities and dungeons.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c10')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c12')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C12: What is... MMORPG -->
+<div class="card" id="c12">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a game where many players control their own characters in a shared, persistent online world — leveling up, completing quests, working together in huge fantasy environments?</div>
+    <div class="answer-field">
+      <label>Type the word (or abbreviation):</label>
+      <input type="text" id="f-mmorpg" placeholder="Your answer...">
+      <div class="field-err" id="err-mmorpg"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c11')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-mmorpg','err-mmorpg','c13')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FPS ===== -->
+<!-- C13: Word -->
+<div class="card" id="c13">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 4 of 6</span>
+    <div class="word-display">FPS</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c12')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c14')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C14: Definition -->
+<div class="card" id="c14">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 4 of 6</span>
+    <div class="def-box">
+      An <strong>FPS</strong> is a First-Person Shooter — a game where the player sees the world from the character's eyes and primarily fights with guns or other ranged weapons.<br><br>
+      Many FPS games focus on reflexes, aiming, and quick movement through levels or arenas while fighting enemies.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c13')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c15')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C15: What is... FPS -->
+<div class="card" id="c15">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a game where you see through the character's own eyes, primarily fighting with guns — focused on reflexes, aiming, and quick movement?</div>
+    <div class="answer-field">
+      <label>Type the word (or abbreviation):</label>
+      <input type="text" id="f-fps" placeholder="Your answer...">
+      <div class="field-err" id="err-fps"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c14')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-fps','err-fps','c16')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOBA ===== -->
+<!-- C16: Word -->
+<div class="card" id="c16">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 5 of 6</span>
+    <div class="word-display">MOBA</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c15')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c17')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C17: Definition -->
+<div class="card" id="c17">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 5 of 6</span>
+    <div class="def-box">
+      A <strong>MOBA</strong> is a Multiplayer Online Battle Arena — a game where two teams of players control powerful characters ("heroes") and fight to destroy the other team's base.<br><br>
+      MOBAs are usually played in real time and combine elements of strategy, teamwork, and character-specific abilities on a fixed map.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c16')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c18')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C18: What is... MOBA -->
+<div class="card" id="c18">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a game where two teams control "heroes" and fight in real time to destroy the other team's base — combining strategy, teamwork, and character abilities on a fixed map?</div>
+    <div class="answer-field">
+      <label>Type the word (or abbreviation):</label>
+      <input type="text" id="f-moba" placeholder="Your answer...">
+      <div class="field-err" id="err-moba"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c17')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-moba','err-moba','c19')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BATTLE ROYALE ===== -->
+<!-- C19: Word -->
+<div class="card" id="c19">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 6 of 6</span>
+    <div class="word-display" style="font-size:30px;">Battle Royale</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-ghost btn-back" onclick="go('c18')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c20')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C20: Definition -->
+<div class="card" id="c20">
+  <div class="card-inner">
+    <span class="chip chip-vocab">Word 6 of 6</span>
+    <div class="def-box">
+      A <strong>Battle Royale</strong> is a game mode where a large number of players enter a shrinking play area and fight until only one player or team remains.<br><br>
+      Players typically start with little equipment and must search for weapons, loot, and supplies while avoiding both enemies and an encroaching danger zone.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c19')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c21')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C21: What is... Battle Royale -->
+<div class="card" id="c21">
+  <div class="card-inner">
+    <span class="chip chip-vocab">What is…</span>
+    <div class="what-is">What is…</div>
+    <div class="what-is-def">…a game mode where a large number of players drop into a shrinking area, search for weapons and loot, and fight until only one player or team is left standing?</div>
+    <div class="answer-field">
+      <label>Type the word(s):</label>
+      <input type="text" id="f-br" placeholder="Your answer...">
+      <div class="field-err" id="err-br"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="backAndLog('c20')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-br','err-br','c22')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C22: Already did the quiz -->
+<div class="card" id="c22">
+  <div class="card-inner">
+    <span class="chip chip-win">Already Done ✓</span>
+    <div class="win-banner">🏆 &nbsp;I just saw you already did the vocab quiz. That is FANTASTIC.</div>
+    <p>If you end up preferring to just work ahead without a Virgil — totally cool. I'm down either way.</p>
+    <p>But holy crow. You're moving.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c21')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c23')">Keep going →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C23: Why Play Games video -->
+<div class="card" id="c23">
+  <div class="card-inner">
+    <span class="chip chip-video">Video</span>
+    <h2>Go watch "Why Play Games"</h2>
+    <p>It's in Schoology under Unit 2. Find it, watch it, come back here.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c22')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c24')">OK, I'm done →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C24: Why Do You Play Stupid Games -->
+<div class="card" id="c24">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Assignment</span>
+    <h2>Why do you play stupid games?</h2>
+    <p>This is the assignment right after that video in Schoology. You're going to follow a link and <strong>record yourself</strong> talking about why you like to play "stupid" games.</p>
+    <p>Say what you actually think. That's what makes a good video.</p>
+    <p>Come back here when you've submitted it.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c23')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c25')">I've done it and submitted it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C25: Field about video -->
+<div class="card" id="c25">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Reflection</span>
+    <h2>Nice. One quick thing.</h2>
+    <p>Just give me a sentence or two about what you talked about in your video. What did you say?</p>
+    <div class="answer-field">
+      <textarea id="f-video" placeholder="I talked about..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c24')">← Back</button>
+      <button class="btn btn-primary" onclick="saveFieldAndGo('f-video','videoReflection','c26')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C26: Archetype intro -->
+<div class="card" id="c26">
+  <div class="card-inner">
+    <span class="chip chip-arch">Character Archetypes</span>
+    <h2>Now — a lesson from Unit 2.</h2>
+    <p>We're going to go through some character archetypes. These are the types of characters that show up in games, movies, and stories over and over.</p>
+    <p>Same deal as the vocab: I'll show you the definition, and then ask you to type the character type. Short, easy, repetitive — and yes, that's by design.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c25')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c27')">Let's go →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C27: Hero -->
+<div class="card" id="c27">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 1 of 11</span>
+    <div class="def-box">
+      The <strong>Hero</strong> is usually the character played by the player. They embark on a transformative journey — facing and overcoming challenges. Heroes are selfless; they make sacrifices to protect the people they care about. You'll find this character in action, adventure, and role-playing games. Think Gordon Freeman from Half-Life.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-hero" placeholder="Type the character type...">
+      <div class="field-err" id="err-hero"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c26')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-hero','err-hero','c28')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C28: Shadow -->
+<div class="card" id="c28">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 2 of 11</span>
+    <div class="def-box">
+      The <strong>Shadow</strong> is the evil character — the opposite of the hero. Like Agent Smith in The Matrix. To increase tension, the shadow's identity may not be revealed until the end. Sometimes the shadow and the hero are the same person — the shadow being the hero's dark side. Think the Dark Prince in Prince of Persia: The Two Thrones.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-shadow" placeholder="Type the character type...">
+      <div class="field-err" id="err-shadow"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c27')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-shadow','err-shadow','c29')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C29: Mentor -->
+<div class="card" id="c29">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 3 of 11</span>
+    <div class="rep-note">🔁 Yeah, I know — this probably feels a little repetitive. That's the point. It's called spaced repetition and it genuinely works. Your brain is building a filing system right now.</div>
+    <div class="def-box">
+      The <strong>Mentor</strong> acts as the hero's advisor. They guide the hero's quest by providing hints and tips for overcoming challenges. Deckard Cain from the Diablo series is a classic mentor. You'll find this character in action, action-adventure, and role-playing games.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-mentor" placeholder="Type the character type...">
+      <div class="field-err" id="err-mentor"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c28')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-mentor','err-mentor','c30')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C30: Ally -->
+<div class="card" id="c30">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 4 of 11</span>
+    <div class="def-box">
+      An <strong>Ally</strong> helps the hero on their quest — usually as a sidekick assisting with tasks that are difficult for the hero to do alone. In Fallout 3, Dogmeat the dog is one of several allies you can recruit. This character type typically shows up in action-adventure and role-playing games.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-ally" placeholder="Type the character type...">
+      <div class="field-err" id="err-ally"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c29')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-ally','err-ally','c31')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C31: Guardian -->
+<div class="card" id="c31">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 5 of 11</span>
+    <div class="def-box">
+      The <strong>Guardian</strong> blocks the hero's progress until the hero proves they are worthy of facing what lies ahead. In The Matrix Reloaded, the Oracle's guardian Seraph stops Neo until he proves himself in battle. Sometimes the guardian isn't even a person — it can be fear or self-doubt.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-guardian" placeholder="Type the character type...">
+      <div class="field-err" id="err-guardian"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c30')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-guardian','err-guardian','c32')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C32: Trickster -->
+<div class="card" id="c32">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 6 of 11</span>
+    <div class="rep-note">🔁 Still going. Still by design. You're almost halfway through the archetypes.</div>
+    <div class="def-box">
+      The <strong>Trickster</strong> is a neutral character who likes to play pranks on the hero. Their antics may slow the hero down or force an alternate path — but they're usually harmless and provide comic relief. Peeves the Poltergeist from the Harry Potter games is a classic example.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-trickster" placeholder="Type the character type...">
+      <div class="field-err" id="err-trickster"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c31')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-trickster','err-trickster','c33')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C33: Herald -->
+<div class="card" id="c33">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 7 of 11</span>
+    <div class="def-box">
+      A <strong>Herald</strong> triggers a change in the storyline. In Assassin's Creed 2, the hero lives a happy life until his father and brothers are killed — that tragic event changes everything. The slain family members serve as heralds. This character type is common in role-playing games.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-herald" placeholder="Type the character type...">
+      <div class="field-err" id="err-herald"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c32')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-herald','err-herald','c34')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C34: Protagonist -->
+<div class="card" id="c34">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 8 of 11</span>
+    <div class="def-box">
+      The <strong>Protagonist</strong> is similar to the hero — the game is played from their perspective. They're usually depicted as strong and likeable, but they can have weaknesses too. Those weaknesses actually make them more human and easier for players to connect with.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-prot" placeholder="Type the character type...">
+      <div class="field-err" id="err-prot"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c33')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-prot','err-prot','c35')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C35: Co-protagonist -->
+<div class="card" id="c35">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 9 of 11</span>
+    <div class="rep-note">🔁 Three more after this. You're almost there. And yes — still doing this on purpose.</div>
+    <div class="def-box">
+      <strong>Co-protagonists</strong> are characters who team up with the protagonist to fight the antagonist. They share the spotlight and work alongside the main character rather than just supporting from the sidelines.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-coprot" placeholder="Type the character type...">
+      <div class="field-err" id="err-coprot"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c34')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-coprot','err-coprot','c36')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C36: Supporting characters -->
+<div class="card" id="c36">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 10 of 11</span>
+    <div class="def-box">
+      <strong>Supporting Characters</strong> aren't the main focus of the story, but they're essential — they help maintain the narrative or keep the hero focused on what matters. Think of them as the background crew that makes the whole story work.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-support" placeholder="Type the character type...">
+      <div class="field-err" id="err-support"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c35')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-support','err-support','c37')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C37: Antagonist -->
+<div class="card" id="c37">
+  <div class="card-inner">
+    <span class="chip chip-arch">Archetype 11 of 11</span>
+    <div class="def-box">
+      The <strong>Antagonist</strong> is the game's villain — but unlike the classical Shadow, the antagonist may not be purely evil. They might just have a conflicting personality or a different point of view than the protagonist. The conflict is real; the motivation isn't always simple.
+    </div>
+    <div class="answer-field">
+      <label>What type of character is this?</label>
+      <input type="text" id="f-antag" placeholder="Type the character type...">
+      <div class="field-err" id="err-antag"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c36')">← Back</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-antag','err-antag','c38')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C38: Types of Characters video -->
+<div class="card" id="c38">
+  <div class="card-inner">
+    <span class="chip chip-video">Video Assignment</span>
+    <h2>Go do the Types of Characters video assignment.</h2>
+    <p>It's in Schoology: <strong>"Types of Characters: Protagonist, Antagonist, Dynamic, Static, Flat, Round."</strong></p>
+    <p>Come back when you're done.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c37')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c39')">I'm done →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C39: Unit 2 Exam -->
+<div class="card" id="c39">
+  <div class="card-inner">
+    <span class="chip chip-win">Unit 2 Exam</span>
+    <div class="win-banner">👀 &nbsp;I see you've already started the Unit 2 exam. You're awesome.</div>
+    <p>Go finish it. Hit the button below when you're done and we're on to Unit 3.</p>
+    <div class="btn-row">
+      <button class="btn btn-ghost btn-back" onclick="go('c38')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c40')">Unit 2 exam — done ✓ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C40: Transition to Part B -->
+<div class="card" id="c40">
+  <div class="card-inner">
+    <span class="chip chip-win">Part A — Complete</span>
+    <div class="finish-hero">
+      <span class="finish-icon">🎮</span>
+      <h1>Unit 2 is in the books.</h1>
+    </div>
+    <p style="text-align:center;">You've covered vocab, archetypes, videos, and the exam.</p>
+    <p style="text-align:center;">Part B picks up with Unit 3. Open it when you're ready.</p>
+    <div class="highlight-box" style="text-align:center;margin-top:20px;">
+      <strong>Part B link:</strong><br>
+      <a href="marick-virgil3b.html" style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">Open Virgil 3 — Part B →</a>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:20px;">
+      <button class="btn btn-ghost btn-back" onclick="go('c39')">← Back</button>
+      <button class="btn btn-green" onclick="finishPartA()">Mark Part A complete ✓</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button id="pomo-toggle" onclick="togglePomo()">⏱ Focus Timer</button>
+<div id="pomo-panel">
+  <h4>Focus Timer</h4>
+  <p class="pomo-note">Different brains focus differently. Use this only if it helps — it's a tool, not a rule.</p>
+  <p class="pomo-note">Future Virgils will have coding exercises built right in — something to look forward to.</p>
+  <div id="pomo-display">25:00</div>
+  <div id="pomo-label">Focus block</div>
+  <div class="pomo-presets">
+    <button class="pomo-preset active-preset" onclick="setPreset(25,5,this)">25 / 5</button>
+    <button class="pomo-preset" onclick="setPreset(10,2,this)">10 / 2</button>
+    <button class="pomo-preset" onclick="setPreset(45,10,this)">45 / 10</button>
+    <button class="pomo-preset" onclick="setPreset(0,0,this)">Custom</button>
+  </div>
+  <div id="custom-inputs" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+    <input id="custom-focus" type="number" min="1" max="90" placeholder="Focus min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <input id="custom-break" type="number" min="1" max="30" placeholder="Break min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <button onclick="applyCustom()" style="width:100%;margin-top:4px;background:var(--accent);border:none;border-radius:6px;padding:7px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Set</button>
+  </div>
+  <div class="pomo-btns">
+    <button class="pomo-btn" id="pomo-start" onclick="startPomo()">Start</button>
+    <button class="pomo-btn" id="pomo-reset" onclick="resetPomo()">Reset</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("B-4-8kwoZ57cJRsSj");</script>
+<script>
+const TOTAL_CARDS = 40;
+const cardOrder = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24','c25','c26','c27','c28','c29','c30','c31','c32','c33','c34','c35','c36','c37','c38','c39','c40'];
+let currentIndex = 0;
+const sessionId = 'session-' + Date.now();
+const startTime = Date.now();
+const savedAnswers = {};
+
+function go(cardId) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  currentIndex = cardOrder.indexOf(cardId);
+  updateProgress();
+  restoreFields(cardId);
+  saveToFirebase({event:'card_viewed', card:cardId});
+}
+
+function restoreFields(cardId) {
+  Object.keys(savedAnswers).forEach(fid => {
+    const el = document.getElementById(fid);
+    if (el) el.value = savedAnswers[fid];
+  });
+}
+
+function updateProgress() {
+  const num = currentIndex + 1;
+  document.getElementById('progress-text').textContent = `Card ${num} of ${TOTAL_CARDS}`;
+  document.getElementById('progress-bar').style.width = (num / TOTAL_CARDS * 100).toFixed(1) + '%';
+}
+
+function requireAndGo(fieldId, errId, nextCard) {
+  const val = document.getElementById(fieldId).value.trim();
+  if (!val) {
+    document.getElementById(errId).textContent = 'Type something — even a guess is fine.';
+    return;
+  }
+  document.getElementById(errId).textContent = '';
+  savedAnswers[fieldId] = val;
+  saveToFirebase({event:'answer_saved', field:fieldId, value:val});
+  go(nextCard);
+}
+
+function saveFieldAndGo(fieldId, key, nextCard) {
+  const val = document.getElementById(fieldId) ? document.getElementById(fieldId).value.trim() : '';
+  savedAnswers[fieldId] = val;
+  saveToFirebase({event:'field_saved', field:key, value:val});
+  go(nextCard);
+}
+
+function backAndLog(targetCard) {
+  saveToFirebase({event:'back_button', returnedTo:targetCard});
+  go(targetCard);
+}
+
+const DB_URL = "https://high-desert-socrates-default-rtdb.firebaseio.com";
+function saveToFirebase(data) {
+  fetch(`${DB_URL}/students/marick/game-dev/virgil3a/${sessionId}.json`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({...data, timestamp: new Date().toISOString()})
+  }).catch(()=>{});
+}
+
+function finishPartA() {
+  const elapsed = Math.round((Date.now() - startTime) / 1000);
+  fetch(`${DB_URL}/students/marick/game-dev/virgil3a/${sessionId}.json`, {
+    method:'PATCH',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({completed:true, completedAt:new Date().toISOString(), timeOnTaskSeconds:elapsed, student:'Marick Bowen', answers:savedAnswers})
+  }).catch(()=>{});
+  emailjs.send("service_nm36t4b","template_rakwrep",{
+    student_name:"Marick Bowen",
+    cascade_name:"Virgil 3 — Part A (Unit 2 + Vocab + Archetypes)",
+    message:`Marick completed Virgil 3 Part A.\n\nTime: ${Math.round(elapsed/60)} min\nSession: ${sessionId}\n\nAnswers:\n${Object.entries(savedAnswers).map(([k,v])=>`${k}: ${v}`).join('\n')}`,
+    to_email:"KEStudents@proton.me"
+  }).catch(()=>{});
+  const btn = document.querySelector('.btn-green');
+  if (btn) { btn.textContent = '✓ Part A marked complete!'; btn.disabled = true; btn.style.background='#2e9e68'; }
+}
+
+// POMODORO
+let pomoFocus=25,pomoBreak=5,pomoSeconds=25*60,pomoRunning=false,pomoInterval=null,pomoIsBreak=false;
+function togglePomo(){document.getElementById('pomo-panel').classList.toggle('open');}
+function setPreset(f,b,btn){document.querySelectorAll('.pomo-preset').forEach(x=>x.classList.remove('active-preset'));btn.classList.add('active-preset');const cd=document.getElementById('custom-inputs');if(f===0){cd.style.display='flex';return;}cd.style.display='none';pomoFocus=f;pomoBreak=b;resetPomo();}
+function applyCustom(){const f=parseInt(document.getElementById('custom-focus').value);const b=parseInt(document.getElementById('custom-break').value);if(f>0)pomoFocus=f;if(b>0)pomoBreak=b;resetPomo();document.getElementById('custom-inputs').style.display='none';}
+function startPomo(){if(pomoRunning){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomo-start').textContent='Start';}else{pomoRunning=true;document.getElementById('pomo-start').textContent='Pause';pomoInterval=setInterval(()=>{pomoSeconds--;if(pomoSeconds<0){pomoIsBreak=!pomoIsBreak;pomoSeconds=(pomoIsBreak?pomoBreak:pomoFocus)*60;document.getElementById('pomo-label').textContent=pomoIsBreak?'Break — step away':'Focus block';}renderPomo();},1000);}}
+function resetPomo(){clearInterval(pomoInterval);pomoRunning=false;pomoIsBreak=false;pomoSeconds=pomoFocus*60;document.getElementById('pomo-start').textContent='Start';document.getElementById('pomo-label').textContent='Focus block';renderPomo();}
+function renderPomo(){const m=Math.floor(pomoSeconds/60).toString().padStart(2,'0');const s=(pomoSeconds%60).toString().padStart(2,'0');document.getElementById('pomo-display').textContent=`${m}:${s}`;}
+
+saveToFirebase({startedAt:new Date().toISOString(),student:'Marick Bowen',cascade:'virgil3-part-a'});
+updateProgress();
+</script>
+</body>
+</html>

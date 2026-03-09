@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marick — Tech + Game Dev Vocab</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#171b26;--surface2:#1e2433;--border:#2a3045;--accent:#5b8def;--accent2:#7c5cbf;--green:#3ecf8e;--yellow:#f5c542;--red:#e05252;--text:#e8ecf4;--muted:#8892a8;--card-max:680px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.7;min-height:100vh;}
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;}
+#topbar .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--accent);letter-spacing:.04em;}
+#progress-text{font-size:13px;color:var(--muted);font-weight:500;}
+#progress-bar-wrap{position:fixed;top:52px;left:0;right:0;height:3px;background:var(--border);z-index:99;}
+#progress-bar{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease;}
+main{padding-top:80px;padding-bottom:140px;display:flex;justify-content:center;}
+.card{display:none;width:100%;max-width:var(--card-max);padding:0 20px;animation:fadeIn .35s ease;}
+.card.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card-inner{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 36px 32px;}
+.chip{display:inline-block;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:18px;}
+.chip-tech{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+.chip-gamedev{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+.chip-mc{background:rgba(124,92,191,.15);color:#a87de8;border:1px solid rgba(124,92,191,.3);}
+.chip-fillin{background:rgba(245,197,66,.15);color:var(--yellow);border:1px solid rgba(245,197,66,.3);}
+.chip-done{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:16px;}
+h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:14px;}
+p{color:#c5cdde;margin-bottom:12px;}
+p:last-of-type{margin-bottom:0;}
+.word-display{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--accent);letter-spacing:-.02em;margin:20px 0;text-align:center;}
+.word-display.gd{color:#a87de8;}
+.word-sub{text-align:center;font-size:14px;color:var(--muted);margin-bottom:24px;}
+.def-box{background:var(--surface2);border-radius:12px;padding:20px 22px;margin:16px 0;font-size:15px;color:#c5cdde;line-height:1.8;border:1px solid var(--border);}
+.def-box strong{color:var(--text);}
+.rep-note{background:rgba(245,197,66,.07);border:1px solid rgba(245,197,66,.2);border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#e0d0a0;line-height:1.6;}
+.blank-sentence{font-size:15px;color:#c5cdde;line-height:1.85;margin:16px 0;padding:16px 18px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);}
+.highlight-box{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 18px;margin:18px 0;font-size:15px;color:#c5cdde;}
+.answer-field{margin:14px 0;}
+.answer-field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px;font-weight:500;}
+.answer-field input[type=text]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+.answer-field input:focus{border-color:var(--accent);}
+.field-err{font-size:13px;color:var(--red);margin-top:6px;min-height:18px;}
+.mc-question{font-size:15px;color:var(--muted);margin-bottom:14px;font-style:italic;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;margin:4px 0 14px;}
+.mc-opt{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;cursor:pointer;font-size:14px;color:#c5cdde;line-height:1.5;transition:all .18s;text-align:left;font-family:'DM Sans',sans-serif;width:100%;}
+.mc-opt:hover:not(:disabled){border-color:var(--accent);color:var(--text);}
+.mc-opt:disabled{cursor:default;}
+.mc-opt.mc-correct{border-color:var(--green)!important;background:rgba(62,207,142,.08)!important;color:var(--green)!important;}
+.mc-opt.mc-wrong{border-color:var(--red)!important;background:rgba(224,82,82,.08)!important;color:var(--red)!important;}
+.mc-feedback{font-size:14px;font-weight:500;min-height:20px;}
+.fb-correct{color:var(--green);}
+.fb-wrong{color:var(--yellow);}
+.mc-next{display:none;}
+.btn-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:12px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s ease;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#4a7de0;transform:translateY(-1px);}
+.btn-green{background:var(--green);color:#0a1a12;}
+.btn-green:hover{background:#35c07f;transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:13px;padding:8px 14px;}
+.btn-back:hover{color:var(--text);border-color:var(--muted);}
+.btn:disabled{opacity:.5;cursor:default;transform:none!important;}
+/* POMODORO */
+#pomo-toggle{position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+#pomo-toggle:hover{border-color:var(--accent);color:var(--accent);}
+#pomo-panel{display:none;position:fixed;bottom:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:240px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+#pomo-panel.open{display:block;}
+#pomo-panel h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+p.pomo-note{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+#pomo-display{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--text);text-align:center;margin:10px 0;letter-spacing:-.02em;}
+#pomo-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px;}
+.pomo-presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.pomo-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.pomo-preset:hover,.pomo-preset.active-preset{border-color:var(--accent);color:var(--accent);}
+.pomo-btns{display:flex;gap:6px;margin-top:10px;}
+.pomo-btn{flex:1;padding:8px;border-radius:6px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+#pomo-start{background:var(--accent);color:#fff;}
+#pomo-reset{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+/* CALCULATOR */
+#calc-toggle{position:fixed;bottom:24px;left:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+#calc-toggle:hover{border-color:var(--accent);color:var(--accent);}
+#calc-panel{display:none;position:fixed;bottom:70px;left:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;width:220px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+#calc-panel.open{display:block;}
+#calc-display{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:right;margin-bottom:10px;min-height:44px;word-break:break-all;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.calc-btn{padding:11px 4px;border-radius:7px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;transition:all .12s;}
+.calc-num{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.calc-num:hover{border-color:var(--accent);color:var(--accent);}
+.c-op{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+.c-op:hover{background:rgba(91,141,239,.25);}
+.calc-eq{background:var(--accent);color:#fff;}
+.calc-eq:hover{background:#4a7de0;}
+.calc-clr{background:rgba(224,82,82,.15);color:var(--red);border:1px solid rgba(224,82,82,.3);}
+.calc-zero{grid-column:span 2;}
+@media(max-width:600px){.card-inner{padding:24px 20px 22px;}h1{font-size:22px;}.word-display{font-size:36px;}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="brand">TECH + GAME DEV VOCAB</span>
+  <span id="progress-text">Card 1 of 41</span>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+<main>
+
+<!-- C1: WELCOME + ROADMAP -->
+<div class="card active" id="c1">
+  <div class="card-inner">
+    <span class="chip chip-tech">Unit 3 — Tech</span>
+    <h1>Here's what today looks like.</h1>
+    <p>One session. Start to finish. Here's every step — in order:</p>
+    <div class="def-box" style="font-size:14px;line-height:2;">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">①</span><span><strong style="color:var(--text);">Vocab</strong> — 13 terms. You're here right now.</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">②</span><span><strong style="color:var(--text);">Reading</strong> — Routers + Firmware. Two short articles.</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">③</span><span><strong style="color:var(--text);">Video</strong> — "What is a Router" (Unit 3 folder in Schoology)</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">④</span><span><strong style="color:var(--text);">Video</strong> — "Firmware" (Unit 3 folder in Schoology)</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">⑤</span><span><strong style="color:var(--text);">Quiz</strong> — Router Basics</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">⑥</span><span><strong style="color:var(--text);">Discussion</strong> — PC Problems</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;"><span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;">⑦</span><span><strong style="color:var(--text);">Reading</strong> — "Squeaky Clean" + 3 quick questions</span></div>
+      <div style="display:flex;align-items:baseline;gap:10px;"><span style="color:var(--green);font-family:'Syne',sans-serif;font-weight:700;">⑧</span><span><strong style="color:var(--text);">Assignment</strong> — How to Clean a Dirty Gaming PC. Then you're done.</span></div>
+    </div>
+    <p style="margin-top:16px;">Start with vocab. I'll show you the word, then the definition, then ask you a question. Some fill-in-the-blank, some multiple choice. Easy on purpose — a few game dev terms are mixed in too.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c2')">Let's go →</button></div>
+  </div>
+</div>
+
+<!-- ===== PACKET ===== -->
+<div class="card" id="c2">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 1 of 9</span>
+    <div class="word-display">Packet</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c1')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c3')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c3">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 1 of 9</span>
+    <div class="def-box">A <strong>packet</strong> is a small unit of data transmitted over a network. When information is sent across the internet, it doesn't travel in one big chunk — it's broken into packets that travel independently and reassemble at the destination. Routers are responsible for directing these packets to the right place.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c2')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c4')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c4">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="blank-sentence">A <strong>___________</strong> is a small unit of data transmitted over a network. When you send information across the internet, it's broken into these — they travel independently and reassemble at the destination.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-packet" placeholder="Your answer...">
+      <div class="field-err" id="err-packet"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c3')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-packet','err-packet','c5')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ROUTER ===== -->
+<div class="card" id="c5">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 2 of 9</span>
+    <div class="word-display">Router</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c4')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c6')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c6">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 2 of 9</span>
+    <div class="def-box">A <strong>router</strong> passes information between one or more computer networks. It acts as a gateway — sitting between the internet connection coming in through a modem and the local network your devices use to communicate. When a packet arrives, the router identifies where it's going and calculates the best path to get it there.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c5')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c7')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c7">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <p class="mc-question">A router is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c7',this,'router')">A physical component that stores firmware permanently in a device</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c7',this,'router')">A device that passes data between networks, acting as a gateway between your internet connection and local devices</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c7',this,'router')">Software that manages a computer's hardware resources</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c7',this,'router')">A small unit of data transmitted across a network</button>
+    </div>
+    <div class="mc-feedback" id="fb-c7"></div>
+    <div class="mc-next" id="next-c7"><div class="btn-row"><button class="btn btn-primary" onclick="go('c8')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c6')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== ALGORITHM (GAME DEV) ===== -->
+<div class="card" id="c8">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 1 of 4</span>
+    <div class="word-display gd">Algorithm</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c7')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c9')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c9">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 1 of 4</span>
+    <div class="def-box">An <strong>algorithm</strong> is a step-by-step set of rules a computer follows to solve a problem or complete a task. In games, algorithms power NPC movement, damage calculations, and physics. A routing table — the set of rules a router uses to direct data — is itself an algorithm.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c8')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c10')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c10">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="rep-note">🔁 Three terms in. Feeling easy? Good. That's the design. Your brain is building a filing system right now.</div>
+    <div class="blank-sentence">An <strong>___________</strong> is a step-by-step set of rules a computer follows to solve a problem or complete a task — like the logic that decides how an NPC moves, or how a game calculates damage.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-algorithm" placeholder="Your answer...">
+      <div class="field-err" id="err-algorithm"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c9')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-algorithm','err-algorithm','c11')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIRTUAL VS STANDALONE ===== -->
+<div class="card" id="c11">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 3 of 9</span>
+    <div class="word-display" style="font-size:30px;line-height:1.2;">Virtual vs.<br>Standalone</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c10')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c12')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c12">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 3 of 9</span>
+    <div class="def-box">Routers can be <strong>standalone</strong> — a physical box you can hold — or <strong>virtual</strong>, meaning the router is a software instance running on a machine rather than existing as separate hardware. Both do the same job. One is physical, one isn't.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c11')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c13')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c13">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <p class="mc-question">A virtual router is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'virtual-standalone')">A router with extra antennae for a stronger WiFi signal</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'virtual-standalone')">A router that only works on mobile devices</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c13',this,'virtual-standalone')">A router that exists as a software instance rather than a physical device</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'virtual-standalone')">A backup router that activates when the main one fails</button>
+    </div>
+    <div class="mc-feedback" id="fb-c13"></div>
+    <div class="mc-next" id="next-c13"><div class="btn-row"><button class="btn btn-primary" onclick="go('c14')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c12')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== FIRMWARE ===== -->
+<div class="card" id="c14">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 4 of 9</span>
+    <div class="word-display">Firmware</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c13')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c15')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c15">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 4 of 9</span>
+    <div class="def-box"><strong>Firmware</strong> is a type of software embedded into hardware devices during manufacturing to control their basic functions. It runs before the operating system, is stored in non-volatile memory (so it survives power loss), and acts as a bridge between hardware and software. You can't see it working — but it's what makes a device know how to be a device.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c14')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c16')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c16">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="blank-sentence"><strong>___________</strong> is a type of software embedded into hardware during manufacturing to control basic functions. It runs before the operating system and is stored in non-volatile memory.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-firmware" placeholder="Your answer...">
+      <div class="field-err" id="err-firmware"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c15')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-firmware','err-firmware','c17')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== GAME ENGINE (GAME DEV) ===== -->
+<div class="card" id="c17">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 2 of 4</span>
+    <div class="word-display gd">Game Engine</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c16')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c18')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c18">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 2 of 4</span>
+    <div class="def-box">A <strong>game engine</strong> is a software framework designed for the creation and development of video games. It handles the core systems every game needs — rendering, physics, audio, input — so developers don't have to build those from scratch. Unity and Unreal Engine are two of the most widely used examples.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c17')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c19')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c19">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <div class="rep-note">🔁 Six in. Still repetitive. Still by design.</div>
+    <p class="mc-question">A game engine is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c19',this,'game-engine')">The CPU inside a gaming computer</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c19',this,'game-engine')">A type of battery used to power gaming hardware</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c19',this,'game-engine')">A software framework designed for creating and developing video games</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c19',this,'game-engine')">The graphics card responsible for rendering visuals on screen</button>
+    </div>
+    <div class="mc-feedback" id="fb-c19"></div>
+    <div class="mc-next" id="next-c19"><div class="btn-row"><button class="btn btn-primary" onclick="go('c20')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c18')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== SOFTWARE ===== -->
+<div class="card" id="c20">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 5 of 9</span>
+    <div class="word-display">Software</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c19')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c21')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c21">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 5 of 9</span>
+    <div class="def-box"><strong>Software</strong> refers to programs and applications installed on a device and used for interaction — browsing the internet, word processing, listening to music, playing games. Unlike firmware, software is designed to be installed, updated, and removed by users.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c20')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c22')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c22">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="blank-sentence"><strong>___________</strong> refers to programs and applications installed on a device and used for interaction — browsing, word processing, listening to music. Unlike firmware, it's designed to be installed, updated, and removed.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-software" placeholder="Your answer...">
+      <div class="field-err" id="err-software"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c21')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-software','err-software','c23')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HARDWARE ===== -->
+<div class="card" id="c23">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 6 of 9</span>
+    <div class="word-display">Hardware</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c22')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c24')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c24">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 6 of 9</span>
+    <div class="def-box"><strong>Hardware</strong> refers to the physical components of a computer or device — the parts you can actually touch. Processor, screen, keyboard, circuit board, hard drive — all hardware. Software runs on hardware. Firmware tells hardware how to start up.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c23')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c25')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c25">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <p class="mc-question">Hardware is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c25',this,'hardware')">The programs and applications installed on a device</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c25',this,'hardware')">The firmware that initializes a device at startup</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c25',this,'hardware')">The set of instructions stored in non-volatile memory</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c25',this,'hardware')">The physical components of a computer — the parts you can actually touch</button>
+    </div>
+    <div class="mc-feedback" id="fb-c25"></div>
+    <div class="mc-next" id="next-c25"><div class="btn-row"><button class="btn btn-primary" onclick="go('c26')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c24')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== FRAME RATE (GAME DEV) ===== -->
+<div class="card" id="c26">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 3 of 4</span>
+    <div class="word-display gd">Frame Rate</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c25')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c27')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c27">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 3 of 4</span>
+    <div class="def-box"><strong>Frame rate</strong> is how many individual images (frames) your screen displays per second, measured in FPS. Higher frame rate = smoother gameplay. Most games target 30 or 60 FPS. Your GPU — a piece of hardware — is primarily responsible for maintaining it.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c26')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c28')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c28">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="rep-note">🔁 Nine terms. Last stretch. You're doing exactly what memory science recommends.</div>
+    <div class="blank-sentence"><strong>___________</strong> is how many individual images your screen displays per second, measured in FPS. Higher means smoother. Most games target 30 or 60.</div>
+    <div class="answer-field">
+      <label>Type the word(s):</label>
+      <input type="text" id="f-framerate" placeholder="Your answer...">
+      <div class="field-err" id="err-framerate"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c27')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-framerate','err-framerate','c29')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BIOS ===== -->
+<div class="card" id="c29">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 7 of 9</span>
+    <div class="word-display">BIOS</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c28')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c30')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c30">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 7 of 9</span>
+    <div class="def-box"><strong>BIOS</strong> stands for Basic Input/Output System. It's firmware built into personal computers that runs the moment you press the power button — before the operating system loads. BIOS initializes your hardware, checks that everything is working, then hands control over to the OS.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c29')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c31')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c31">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <p class="mc-question">BIOS is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c31',this,'bios')">A programming language used in early computing</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c31',this,'bios')">Firmware in personal computers that runs the moment you press the power button, before the OS loads</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c31',this,'bios')">The system that tracks which internet traffic goes to which device on a network</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c31',this,'bios')">An older type of physical router used in home networks</button>
+    </div>
+    <div class="mc-feedback" id="fb-c31"></div>
+    <div class="mc-next" id="next-c31"><div class="btn-row"><button class="btn btn-primary" onclick="go('c32')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c30')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== UEFI ===== -->
+<div class="card" id="c32">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 8 of 9</span>
+    <div class="word-display">UEFI</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c31')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c33')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c33">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 8 of 9</span>
+    <div class="def-box"><strong>UEFI</strong> (Unified Extensible Firmware Interface) is the modern replacement for BIOS. Like BIOS, it's firmware that runs at startup to initialize hardware before the OS loads — but with a more advanced interface, support for larger drives, faster boot times, and better security. Most computers made after 2012 use UEFI instead of BIOS.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c32')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c34')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c34">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="blank-sentence"><strong>___________</strong> is the modern replacement for BIOS — firmware that initializes hardware at startup, with a more advanced interface, faster boot times, and better security features.</div>
+    <div class="answer-field">
+      <label>Type the word:</label>
+      <input type="text" id="f-uefi" placeholder="Your answer...">
+      <div class="field-err" id="err-uefi"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c33')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-uefi','err-uefi','c35')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RENDERING (GAME DEV) ===== -->
+<div class="card" id="c35">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 4 of 4</span>
+    <div class="word-display gd">Rendering</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c34')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c36')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c36">
+  <div class="card-inner">
+    <span class="chip chip-gamedev">Game Dev Term 4 of 4</span>
+    <div class="def-box"><strong>Rendering</strong> is the process of generating an image from a model by means of computer programs. In games, the engine takes all the data in a scene — geometry, lighting, textures, object positions — and converts it into the image on your screen. Your GPU does most of this work. Higher rendering quality = more realistic visuals, higher hardware demand.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c35')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c37')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c37">
+  <div class="card-inner">
+    <span class="chip chip-mc">Multiple Choice</span>
+    <div class="rep-note">🔁 Twelve terms. Last question. You've now seen every word three times. That's the whole point.</div>
+    <p class="mc-question">Rendering is...</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c37',this,'rendering')">The process of saving a file to non-volatile memory</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c37',this,'rendering')">How a game detects when two objects have made contact</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c37',this,'rendering')">Compressing data into packets for network transmission</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c37',this,'rendering')">The process of generating an image from a model by means of computer programs</button>
+    </div>
+    <div class="mc-feedback" id="fb-c37"></div>
+    <div class="mc-next" id="next-c37"><div class="btn-row"><button class="btn btn-primary" onclick="go('c38')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c36')">← Back</button></div>
+  </div>
+</div>
+
+<!-- ===== OS ===== -->
+<div class="card" id="c38">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 9 of 9</span>
+    <div class="word-display">OS</div>
+    <div class="word-sub">Say it out loud or write it down.</div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn btn-back btn-ghost" onclick="go('c37')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c39')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c39">
+  <div class="card-inner">
+    <span class="chip chip-tech">Tech Term 9 of 9</span>
+    <div class="def-box">An <strong>OS</strong> (Operating System) is the software that manages all of a computer's hardware and software resources. It's the layer between you and the hardware — letting you run applications, manage files, and interact with the device. Examples: Windows, macOS, Linux, iOS, Android. Firmware loads the OS when a device starts up.</div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c38')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c40')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="card" id="c40">
+  <div class="card-inner">
+    <span class="chip chip-fillin">Fill in the Blank</span>
+    <div class="blank-sentence">An <strong>___________</strong> (Operating System) is the software that manages all of a computer's hardware and software resources. Examples include Windows, macOS, and Linux. Firmware loads this when a device starts up.</div>
+    <div class="answer-field">
+      <label>Type the abbreviation:</label>
+      <input type="text" id="f-os" placeholder="Your answer...">
+      <div class="field-err" id="err-os"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="backAndLog('c39')">← Back (look it up)</button>
+      <button class="btn btn-primary" onclick="requireAndGo('f-os','err-os','c41')">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C41: TRANSITION TO PART B -->
+<div class="card" id="c41">
+  <div class="card-inner">
+    <span class="chip chip-done">Vocab — Done</span>
+    <h1>That's all 13 terms.</h1>
+    <p>Nine tech, four game dev. You've seen each word, read the definition, and typed it back. Three passes at every term — and that's exactly how memory works.</p>
+    <p>Now we're going to read about routers and firmware. You'll recognize the words. That's the idea.</p>
+    <div class="highlight-box" style="text-align:center;margin-top:20px;">
+      <strong>Open Part B when you're ready:</strong><br><br>
+      <a href="marick-tech-reading.html" style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:16px;">Routers + Firmware Reading →</a>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:20px;">
+      <button class="btn btn-back btn-ghost" onclick="go('c40')">← Back</button>
+      <button class="btn btn-green" onclick="finishPartA()">Mark Part A complete ✓</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<button id="pomo-toggle" onclick="togglePomo()">⏱ Focus Timer</button>
+<div id="pomo-panel">
+  <h4>Focus Timer</h4>
+  <p class="pomo-note">Different brains focus differently. Use this only if it helps — tool, not a rule.</p>
+  <div id="pomo-display">25:00</div>
+  <div id="pomo-label">Focus block</div>
+  <div class="pomo-presets">
+    <button class="pomo-preset active-preset" onclick="setPreset(25,5,this)">25 / 5</button>
+    <button class="pomo-preset" onclick="setPreset(10,2,this)">10 / 2</button>
+    <button class="pomo-preset" onclick="setPreset(45,10,this)">45 / 10</button>
+    <button class="pomo-preset" onclick="setPreset(0,0,this)">Custom</button>
+  </div>
+  <div id="custom-inputs" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+    <input id="custom-focus" type="number" min="1" max="90" placeholder="Focus min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <input id="custom-break" type="number" min="1" max="30" placeholder="Break min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <button onclick="applyCustom()" style="width:100%;margin-top:4px;background:var(--accent);border:none;border-radius:6px;padding:7px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Set</button>
+  </div>
+  <div class="pomo-btns">
+    <button class="pomo-btn" id="pomo-start" onclick="startPomo()">Start</button>
+    <button class="pomo-btn" id="pomo-reset" onclick="resetPomo()">Reset</button>
+  </div>
+</div>
+
+<button id="calc-toggle" onclick="toggleCalc()">🔢 Calculator</button>
+<div id="calc-panel">
+  <div id="calc-display">0</div>
+  <div class="calc-grid">
+    <button class="calc-btn calc-clr" onclick="cCalcClear()">C</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('±')">±</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('%')">%</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('÷')">÷</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('7')">7</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('8')">8</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('9')">9</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('×')">×</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('4')">4</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('5')">5</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('6')">6</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('−')">−</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('1')">1</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('2')">2</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('3')">3</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('+')">+</button>
+    <button class="calc-btn calc-num calc-zero" onclick="cCalcNum('0')">0</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('.')">.</button>
+    <button class="calc-btn calc-eq" onclick="cCalcEquals()">=</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("B-4-8kwoZ57cJRsSj");</script>
+<script>
+const TOTAL_CARDS = 41;
+const cardOrder = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15','c16','c17','c18','c19','c20','c21','c22','c23','c24','c25','c26','c27','c28','c29','c30','c31','c32','c33','c34','c35','c36','c37','c38','c39','c40','c41'];
+let currentIndex = 0;
+const sessionId = 'session-' + Date.now();
+const startTime = Date.now();
+const savedAnswers = {};
+const mcAnswered = {};
+
+function go(cardId) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  currentIndex = cardOrder.indexOf(cardId);
+  updateProgress();
+  restoreFields();
+  saveToFirebase({event:'card_viewed', card:cardId});
+}
+
+function restoreFields() {
+  Object.keys(savedAnswers).forEach(fid => {
+    const el = document.getElementById(fid);
+    if (el) el.value = savedAnswers[fid];
+  });
+}
+
+function updateProgress() {
+  const num = currentIndex + 1;
+  document.getElementById('progress-text').textContent = `Card ${num} of ${TOTAL_CARDS}`;
+  document.getElementById('progress-bar').style.width = (num/TOTAL_CARDS*100).toFixed(1)+'%';
+}
+
+function requireAndGo(fieldId, errId, nextCard) {
+  const val = document.getElementById(fieldId).value.trim();
+  if (!val) { document.getElementById(errId).textContent = 'Type something — even a guess is fine.'; return; }
+  document.getElementById(errId).textContent = '';
+  savedAnswers[fieldId] = val;
+  saveToFirebase({event:'fillin_answered', field:fieldId, value:val});
+  go(nextCard);
+}
+
+function backAndLog(targetCard) {
+  saveToFirebase({event:'back_button', returnedTo:targetCard});
+  go(targetCard);
+}
+
+function handleMC(cardId, btn, termKey) {
+  if (mcAnswered[cardId]) return;
+  mcAnswered[cardId] = true;
+  const isCorrect = btn.dataset.correct === 'true';
+  const card = document.getElementById(cardId);
+  card.querySelectorAll('.mc-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === 'true') b.classList.add('mc-correct');
+  });
+  if (!isCorrect) btn.classList.add('mc-wrong');
+  const fb = document.getElementById('fb-' + cardId);
+  fb.textContent = isCorrect ? 'That\'s right.' : 'Not quite — the correct answer is highlighted above.';
+  fb.className = 'mc-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+  document.getElementById('next-' + cardId).style.display = 'block';
+  saveToFirebase({event:'mc_answered', term:termKey, answer:btn.textContent.trim(), correct:isCorrect});
+}
+
+const DB_URL = "https://high-desert-socrates-default-rtdb.firebaseio.com";
+function saveToFirebase(data) {
+  fetch(`${DB_URL}/students/marick/game-dev/tech-vocab/${sessionId}.json`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({...data, timestamp:new Date().toISOString()})
+  }).catch(()=>{});
+}
+
+function finishPartA() {
+  const elapsed = Math.round((Date.now()-startTime)/1000);
+  fetch(`${DB_URL}/students/marick/game-dev/tech-vocab/${sessionId}.json`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({completed:true, completedAt:new Date().toISOString(), timeOnTaskSeconds:elapsed, student:'Marick Bowen', answers:savedAnswers})
+  }).catch(()=>{});
+  const btn = document.querySelector('.btn-green');
+  if (btn){btn.textContent='✓ Part A marked!';btn.disabled=true;btn.style.background='#2e9e68';}
+}
+
+// POMODORO
+let pomoFocus=25,pomoBreak=5,pomoSeconds=25*60,pomoRunning=false,pomoInterval=null,pomoIsBreak=false;
+function togglePomo(){document.getElementById('pomo-panel').classList.toggle('open');}
+function setPreset(f,b,btn){document.querySelectorAll('.pomo-preset').forEach(x=>x.classList.remove('active-preset'));btn.classList.add('active-preset');const cd=document.getElementById('custom-inputs');if(f===0){cd.style.display='flex';return;}cd.style.display='none';pomoFocus=f;pomoBreak=b;resetPomo();}
+function applyCustom(){const f=parseInt(document.getElementById('custom-focus').value);const b=parseInt(document.getElementById('custom-break').value);if(f>0)pomoFocus=f;if(b>0)pomoBreak=b;resetPomo();document.getElementById('custom-inputs').style.display='none';}
+function startPomo(){if(pomoRunning){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomo-start').textContent='Start';}else{pomoRunning=true;document.getElementById('pomo-start').textContent='Pause';pomoInterval=setInterval(()=>{pomoSeconds--;if(pomoSeconds<0){pomoIsBreak=!pomoIsBreak;pomoSeconds=(pomoIsBreak?pomoBreak:pomoFocus)*60;document.getElementById('pomo-label').textContent=pomoIsBreak?'Break — step away':'Focus block';}renderPomo();},1000);}}
+function resetPomo(){clearInterval(pomoInterval);pomoRunning=false;pomoIsBreak=false;pomoSeconds=pomoFocus*60;document.getElementById('pomo-start').textContent='Start';document.getElementById('pomo-label').textContent='Focus block';renderPomo();}
+function renderPomo(){const m=Math.floor(pomoSeconds/60).toString().padStart(2,'0');const s=(pomoSeconds%60).toString().padStart(2,'0');document.getElementById('pomo-display').textContent=`${m}:${s}`;}
+
+// CALCULATOR
+let cVal='0',cPrev=null,cOp=null,cFresh=false;
+function toggleCalc(){document.getElementById('calc-panel').classList.toggle('open');}
+function cCalcDisp(){document.getElementById('calc-display').textContent=cVal;}
+function cCalcNum(n){if(cFresh||cVal==='0'){cVal=n;cFresh=false;}else cVal+=n;if(n==='.'&&cVal.split('.').length>2)cVal=cVal.slice(0,-1);cCalcDisp();}
+function cCalcOp(op){if(op==='±'){cVal=(parseFloat(cVal)*-1).toString();cCalcDisp();return;}if(op==='%'){cVal=(parseFloat(cVal)/100).toString();cCalcDisp();return;}cPrev=parseFloat(cVal);cOp=op;cFresh=true;}
+function cCalcEquals(){if(cPrev===null||cOp===null)return;const cur=parseFloat(cVal);let r;if(cOp==='+')r=cPrev+cur;if(cOp==='−')r=cPrev-cur;if(cOp==='×')r=cPrev*cur;if(cOp==='÷')r=cur!==0?cPrev/cur:'Error';cVal=r.toString();cPrev=null;cOp=null;cFresh=true;cCalcDisp();}
+function cCalcClear(){cVal='0';cPrev=null;cOp=null;cFresh=false;cCalcDisp();}
+
+saveToFirebase({startedAt:new Date().toISOString(),student:'Marick Bowen',cascade:'tech-vocab-part-a'});
+updateProgress();
+</script>
+</body>
+</html>

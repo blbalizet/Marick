@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marick — Routers + Firmware</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#171b26;--surface2:#1e2433;--border:#2a3045;--accent:#5b8def;--accent2:#7c5cbf;--green:#3ecf8e;--yellow:#f5c542;--red:#e05252;--text:#e8ecf4;--muted:#8892a8;--card-max:680px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;line-height:1.7;min-height:100vh;}
+#topbar{position:fixed;top:0;left:0;right:0;height:52px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:100;}
+#topbar .brand{font-family:'Syne',sans-serif;font-weight:800;font-size:15px;color:var(--accent);letter-spacing:.04em;}
+#progress-text{font-size:13px;color:var(--muted);font-weight:500;}
+#progress-bar-wrap{position:fixed;top:52px;left:0;right:0;height:3px;background:var(--border);z-index:99;}
+#progress-bar{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0%;transition:width .4s ease;}
+main{padding-top:80px;padding-bottom:140px;display:flex;justify-content:center;}
+.card{display:none;width:100%;max-width:var(--card-max);padding:0 20px;animation:fadeIn .35s ease;}
+.card.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.card-inner{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 36px 32px;}
+.chip{display:inline-block;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;border-radius:20px;margin-bottom:18px;}
+.chip-tech{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+.chip-read{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+.chip-bridge{background:rgba(124,92,191,.15);color:#a87de8;border:1px solid rgba(124,92,191,.3);}
+.chip-assign{background:rgba(245,197,66,.15);color:var(--yellow);border:1px solid rgba(245,197,66,.3);}
+.chip-done{background:rgba(62,207,142,.15);color:var(--green);border:1px solid rgba(62,207,142,.3);}
+h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;color:var(--text);line-height:1.25;margin-bottom:16px;}
+h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:16px;}
+p{color:#c5cdde;margin-bottom:14px;}
+p:last-of-type{margin-bottom:0;}
+.reading-section p{font-size:15px;line-height:1.9;color:#c8d2e4;margin-bottom:16px;}
+.reading-section p:last-of-type{margin-bottom:0;}
+.reading-section strong{color:var(--text);}
+.section-label{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;display:block;}
+.divider{border:none;border-top:1px solid var(--border);margin:22px 0;}
+.highlight-box{background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 18px;margin:18px 0;font-size:15px;color:#c5cdde;}
+.bridge-text{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:16px 0;}
+.bridge-text p{font-size:15px;color:#c5cdde;line-height:1.85;margin-bottom:12px;}
+.bridge-text p:last-of-type{margin-bottom:0;}
+.path-box{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:'Courier New',monospace;font-size:13px;color:var(--accent);margin:14px 0;word-break:break-all;}
+.path-arrow{color:var(--muted);margin:0 4px;}
+.win-banner{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.25);border-radius:10px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:var(--green);font-weight:600;font-size:15px;}
+.finish-hero{text-align:center;padding:12px 0 8px;}
+.finish-icon{font-size:52px;margin-bottom:12px;display:block;}
+.btn-row{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:12px 22px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;transition:all .18s ease;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:#4a7de0;transform:translateY(-1px);}
+.btn-green{background:var(--green);color:#0a1a12;}
+.btn-green:hover{background:#35c07f;transform:translateY(-1px);}
+.btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);font-size:13px;padding:8px 14px;}
+.btn-back:hover{color:var(--text);border-color:var(--muted);}
+.btn:disabled{opacity:.5;cursor:default;transform:none!important;}
+/* POMO */
+#pomo-toggle{position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+#pomo-toggle:hover{border-color:var(--accent);color:var(--accent);}
+#pomo-panel{display:none;position:fixed;bottom:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;width:240px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+#pomo-panel.open{display:block;}
+#pomo-panel h4{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+p.pomo-note{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+#pomo-display{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;color:var(--text);text-align:center;margin:10px 0;letter-spacing:-.02em;}
+#pomo-label{text-align:center;font-size:12px;color:var(--muted);margin-bottom:14px;}
+.pomo-presets{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.pomo-preset{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 4px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .15s;}
+.pomo-preset:hover,.pomo-preset.active-preset{border-color:var(--accent);color:var(--accent);}
+.pomo-btns{display:flex;gap:6px;margin-top:10px;}
+.pomo-btn{flex:1;padding:8px;border-radius:6px;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+#pomo-start{background:var(--accent);color:#fff;}
+#pomo-reset{background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+/* CALC */
+#calc-toggle{position:fixed;bottom:24px;left:20px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:9px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;z-index:200;display:flex;align-items:center;gap:7px;transition:all .2s;}
+#calc-toggle:hover{border-color:var(--accent);color:var(--accent);}
+#calc-panel{display:none;position:fixed;bottom:70px;left:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;width:220px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.4);}
+#calc-panel.open{display:block;}
+#calc-display{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:right;margin-bottom:10px;min-height:44px;word-break:break-all;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.calc-btn{padding:11px 4px;border-radius:7px;border:none;cursor:pointer;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;transition:all .12s;}
+.calc-num{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.calc-num:hover{border-color:var(--accent);color:var(--accent);}
+.c-op{background:rgba(91,141,239,.15);color:var(--accent);border:1px solid rgba(91,141,239,.3);}
+.c-op:hover{background:rgba(91,141,239,.25);}
+.calc-eq{background:var(--accent);color:#fff;}
+.calc-clr{background:rgba(224,82,82,.15);color:var(--red);border:1px solid rgba(224,82,82,.3);}
+.calc-zero{grid-column:span 2;}
+.mc-question{font-size:15px;color:var(--muted);margin-bottom:14px;font-style:italic;}
+.mc-opts{display:flex;flex-direction:column;gap:8px;margin:4px 0 14px;}
+.mc-opt{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;cursor:pointer;font-size:14px;color:#c5cdde;line-height:1.5;transition:all .18s;text-align:left;font-family:'DM Sans',sans-serif;width:100%;}
+.mc-opt:hover:not(:disabled){border-color:var(--accent);color:var(--text);}
+.mc-opt:disabled{cursor:default;}
+.mc-opt.mc-correct{border-color:var(--green)!important;background:rgba(62,207,142,.08)!important;color:var(--green)!important;}
+.mc-opt.mc-wrong{border-color:var(--red)!important;background:rgba(224,82,82,.08)!important;color:var(--red)!important;}
+.mc-feedback{font-size:14px;font-weight:500;min-height:20px;}
+.fb-correct{color:var(--green);}
+.fb-wrong{color:var(--yellow);}
+.mc-next{display:none;}
+@media(max-width:600px){.card-inner{padding:24px 20px 22px;}h1{font-size:22px;}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <span class="brand">ROUTERS + FIRMWARE</span>
+  <span id="progress-text">Card 1 of 15</span>
+</div>
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+<main>
+
+<!-- C1: Welcome to reading -->
+<div class="card active" id="c1">
+  <div class="card-inner">
+    <span class="chip chip-tech">Part B — Reading</span>
+    <h1>Vocab done. Now we read.</h1>
+    <p>You've seen all 13 terms. The words are going to feel familiar — that's exactly why we did the vocab first.</p>
+    <p>Two short readings, then two videos, a quiz, a discussion, one more reading, and an assignment. Come back here after each step and I'll walk you through it.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="go('c2')">Let's read →</button></div>
+  </div>
+</div>
+
+<!-- C2: Router reading -->
+<div class="card" id="c2">
+  <div class="card-inner">
+    <span class="chip chip-read">Reading — Routers</span>
+    <h2>Routers</h2>
+    <div class="reading-section">
+      <p>You can't go to the store and buy the internet like you can buy a computer. But you can buy a router — and that's close enough.</p>
+      <p>Routers make it possible for devices to connect to the internet and share data. If you've ever connected to WiFi at home, at school, or at a coffee shop, you were using a router. A router passes information between one or more computer networks. It acts as a gateway — sitting between the internet connection coming in through a modem, and the local network that your devices use to talk to each other.</p>
+      <p>When a unit of data — called a <strong>packet</strong> — arrives at a router, the router identifies where that packet is trying to go and calculates the best way to get it there. Think of it like GPS. The router compares the destination against a routing table — basically a set of rules for forwarding data, which is itself an <strong>algorithm</strong> — and picks the best path through the network.</p>
+      <p>The router also keeps track of which internet traffic goes to which device. That's what prevents your emails and web searches from showing up on someone else's screen instead of your own.</p>
+      <p>Routers can be physical <strong>standalone</strong> devices, or <strong>virtual</strong> — meaning the router is a software instance running on a machine rather than a box you can hold.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c1')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('router-read','c3')">Got it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C3: Bridge -->
+<div class="card" id="c3">
+  <div class="card-inner">
+    <span class="chip chip-bridge">The Connection</span>
+    <div class="bridge-text">
+      <p>A router is <strong>hardware</strong>. It has a job: move data from place to place.</p>
+      <p>But how does a piece of hardware know what to do the moment it's turned on — before any software is running, before any human touches it?</p>
+      <p style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:0;">That's where firmware comes in.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c2')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c4')">Keep reading →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C4: Firmware Part 1 -->
+<div class="card" id="c4">
+  <div class="card-inner">
+    <span class="chip chip-read">Reading — Firmware</span>
+    <h2>Firmware</h2>
+    <div class="reading-section">
+      <p><strong>Firmware</strong> is a type of software that's embedded into hardware devices during manufacturing to control their functionality. Firmware runs in the background and controls the hardware. It's not meant to interact with human users directly — it's the thing that tells the machine how to be a machine.</p>
+      <p>Unlike the apps or programs you install on a device, firmware is permanently stored in non-volatile memory — meaning it doesn't disappear when the power is cut. It provides instructions for how the device is supposed to work, minimizes hardware-level security vulnerabilities, and acts as a bridge between the hardware and the operating system.</p>
+      <p>Firmware is the first thing that runs when a device powers on. It sends instructions to the processor before anything else happens. In simple devices — like a remote control — firmware runs continuously because there's no software to take over. In more complex devices like computers, multiple pieces of firmware communicate with each other to accomplish a shared goal, like loading the <strong>OS</strong>.</p>
+      <p>Here's a concrete example: a computer without firmware wouldn't know how to detect its own hard drive. A hard drive without embedded firmware wouldn't know how fast to spin — or when to stop. A traffic light uses firmware to know when to change colors. Your phone, your printer, your router, your TV — all of them have firmware running underneath everything else you see.</p>
+      <p>In personal computers, the most common examples of firmware are <strong>BIOS</strong> and <strong>UEFI</strong> — the programs that run the moment you press the power button, before Windows or any other OS loads.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c3')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('firmware-read-1','c5')">Got it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C5: Firmware Part 2 -->
+<div class="card" id="c5">
+  <div class="card-inner">
+    <span class="chip chip-read">Reading — Firmware (cont.)</span>
+    <h2>Types, Updates, and One Warning</h2>
+    <div class="reading-section">
+      <p>There are three types of firmware. <strong>Low-level firmware</strong> is permanently stored in non-volatile chips — it can't be modified or updated, ever. <strong>High-level firmware</strong> is stored in flash memory, so updates are possible and manufacturers do push them. <strong>Subsystem firmware</strong> is part of an embedded system that can operate somewhat independently — like a server's power system, which runs almost separately from the rest of the machine.</p>
+      <p>Device manufacturers regularly release firmware updates to fix bugs, keep devices secure, and maintain compatibility. Your phone gets these. Game consoles get them. TVs get them — usually as a prompt asking you to download and install.</p>
+      <p>One last thing worth knowing: you normally can't delete firmware. If you somehow did, your device would become what's called a <em>brick</em> — powered on but completely non-functional. It would be like wiping out the device's brain.</p>
+      <hr class="divider">
+      <p style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);margin-bottom:8px;">The short version:</p>
+      <p>The router is hardware doing a job. Firmware is what tells it how. Without firmware, it's just a box.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c4')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('firmware-read-2','c6')">Got it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C6: Video — What is a Router -->
+<div class="card" id="c6">
+  <div class="card-inner">
+    <span class="chip chip-read">Video 1 of 2</span>
+    <h2>Watch: "What is a Router"</h2>
+    <p>Go to Schoology and find the video called <strong>"What is a Router"</strong> in the Unit 3 folder. Watch the whole thing.</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Unit 3 <span class="path-arrow">→</span> What is a Router
+    </div>
+    <p>You've already read about routers. This is just going to lock it in. Come back when it's done.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c5')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('video-router','c7')">Watched it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C7: Video — Firmware -->
+<div class="card" id="c7">
+  <div class="card-inner">
+    <span class="chip chip-read">Video 2 of 2</span>
+    <h2>Watch: "Firmware"</h2>
+    <p>Still in the Unit 3 folder — now find the video called <strong>"Firmware"</strong>. Watch the whole thing.</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Unit 3 <span class="path-arrow">→</span> Firmware
+    </div>
+    <p>You know this stuff. Let it confirm what you already read.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c6')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('video-firmware','c8')">Watched it →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C8: Router Basics assignment -->
+<div class="card" id="c8">
+  <div class="card-inner">
+    <span class="chip chip-assign">Quiz</span>
+    <h2>Router Basics</h2>
+    <p>Go do the <strong>Router Basics</strong> quiz in Schoology. You just read all of this and watched a video on it. You know the material — go get it done.</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Unit 3 <span class="path-arrow">→</span> Router Basics
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c7')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('router-basics-quiz','c9')">Done with the quiz →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C9: PC Problems discussion intro -->
+<div class="card" id="c9">
+  <div class="card-inner">
+    <span class="chip chip-assign">Discussion</span>
+    <h2>PC Problems</h2>
+    <p>Before you go post, read these four questions. You don't need to answer them here — just take 30 seconds and think about each one.</p>
+    <div class="def-box" style="font-size:15px;line-height:2.1;">
+      <div>① What are the most common problems you hear about with computers?</div>
+      <div>② How do these problems start?</div>
+      <div>③ What can be done to prevent issues with a computer?</div>
+      <div>④ How can you repair and troubleshoot issues from home?</div>
+    </div>
+    <p style="margin-top:14px;">The instructions say: <em>answer in 5–7 sentences and respond to at least 2 peers.</em> Go do that in Schoology, then come back here.</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Unit 3 <span class="path-arrow">→</span> PC Problems Discussion
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c8')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('pc-problems-discussion','c10')">Discussion posted →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C10: Squeaky Clean reading -->
+<div class="card" id="c10">
+  <div class="card-inner">
+    <span class="chip chip-read">Reading — Squeaky Clean</span>
+    <h2>Squeaky Clean</h2>
+    <div class="reading-section">
+      <p>Keeping a computer clean can increase the longevity of the unit for a significant amount of time. Additionally, as dust and dirt build up in the unit, it can become a fire hazard or cause significant damage to PC components.</p>
+      <p>Along with overheating, dust buildup can cost you performance. As temperatures rise, your CPU and GPU will begin to drop below their maximum boost and turbo clocks. In severe cases it can lead to significant throttling, if not shutdowns when your system is under a heavy load.</p>
+      <p>The most important thing to consider when cleaning your case is that we want to make it possible for cool, fresh air to get into the case and hot air to get out. If dust filters are clogged or there's excess dust collected around the heat sinks, that's not going to be possible and your system could overheat.</p>
+      <p>To counter that, you want to do everything you can to eliminate dust and leave your system fresh and clean.</p>
+      <hr class="divider">
+      <p><strong>Note:</strong> Whenever cleaning your PC or its components, you need to take extra special care about static damage. Using an anti-static wristband is ideal, but if you don't have one to hand, make sure to regularly ground yourself by touching your case or PSU housing.</p>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c9')">← Back</button>
+      <button class="btn btn-primary" onclick="go('c11')">Got it — questions →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C11: Squeaky Clean MC 1 -->
+<div class="card" id="c11">
+  <div class="card-inner">
+    <span class="chip chip-bridge">Squeaky Clean — Q1 of 3</span>
+    <p class="mc-question">What can happen to a PC as dust builds up inside it?</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c11',this,'sq1')">The fans spin faster, which actually cools the system down</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c11',this,'sq1')">It can overheat, lose performance, throttle, and even shut down under heavy load</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c11',this,'sq1')">Dust only affects the monitor and screen — not internal parts</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c11',this,'sq1')">Nothing significant — dust is mostly cosmetic</button>
+    </div>
+    <div class="mc-feedback" id="fb-c11"></div>
+    <div class="mc-next" id="next-c11"><div class="btn-row"><button class="btn btn-primary" onclick="go('c12')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c10')">← Back (re-read)</button></div>
+  </div>
+</div>
+
+<!-- C12: Squeaky Clean MC 2 -->
+<div class="card" id="c12">
+  <div class="card-inner">
+    <span class="chip chip-bridge">Squeaky Clean — Q2 of 3</span>
+    <p class="mc-question">What's the most important goal when cleaning a PC case?</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c12',this,'sq2')">Making sure all cables are neatly tied together</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c12',this,'sq2')">Removing all stickers and labels from components</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c12',this,'sq2')">Allowing cool air to flow in and hot air to flow out</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c12',this,'sq2')">Keeping the hard drive free of magnetic dust particles</button>
+    </div>
+    <div class="mc-feedback" id="fb-c12"></div>
+    <div class="mc-next" id="next-c12"><div class="btn-row"><button class="btn btn-primary" onclick="go('c13')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c11')">← Back</button></div>
+  </div>
+</div>
+
+<!-- C13: Squeaky Clean MC 3 -->
+<div class="card" id="c13">
+  <div class="card-inner">
+    <span class="chip chip-bridge">Squeaky Clean — Q3 of 3</span>
+    <p class="mc-question">Why do you need to be careful about static electricity when cleaning your PC?</p>
+    <div class="mc-opts">
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'sq3')">Static electricity can cause fires inside the power supply</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'sq3')">It can permanently erase data stored on your hard drive</button>
+      <button class="mc-opt" data-correct="true"  onclick="handleMC('c13',this,'sq3')">It can damage PC components — that's why grounding yourself matters</button>
+      <button class="mc-opt" data-correct="false" onclick="handleMC('c13',this,'sq3')">It will short-circuit the monitor if you touch the screen</button>
+    </div>
+    <div class="mc-feedback" id="fb-c13"></div>
+    <div class="mc-next" id="next-c13"><div class="btn-row"><button class="btn btn-primary" onclick="go('c14')">Next →</button></div></div>
+    <div class="btn-row" style="margin-top:12px;"><button class="btn btn-back btn-ghost" onclick="go('c12')">← Back</button></div>
+  </div>
+</div>
+
+<!-- C14: How to Clean a Dirty Gaming PC assignment -->
+<div class="card" id="c14">
+  <div class="card-inner">
+    <span class="chip chip-assign">Assignment</span>
+    <h2>How to Clean a Dirty Gaming PC</h2>
+    <p>Last one. Go to Schoology and find <strong>"How to Clean a Dirty Gaming PC"</strong> in Unit 3. There's a ~10 minute video with three embedded questions — they pop up at specific moments in the video, so just answer them as they appear.</p>
+    <div class="path-box">
+      Schoology <span class="path-arrow">→</span> Game Development <span class="path-arrow">→</span> Materials <span class="path-arrow">→</span> Unit 3 <span class="path-arrow">→</span> How to Clean a Dirty Gaming PC
+    </div>
+    <p>Watch the whole video and answer all three questions. Then come back here.</p>
+    <div class="btn-row">
+      <button class="btn btn-back btn-ghost" onclick="go('c13')">← Back</button>
+      <button class="btn btn-primary" onclick="dingAndGo('cleaning-assignment','c15')">Done — all three answered →</button>
+    </div>
+  </div>
+</div>
+
+<!-- C15: DONE -->
+<div class="card" id="c15">
+  <div class="card-inner">
+    <span class="chip chip-done">Done ✓</span>
+    <div class="finish-hero">
+      <span class="finish-icon">🎮</span>
+    </div>
+    <div class="win-banner">✅ &nbsp;That's the whole day — every step done.</div>
+    <h2>Seriously. That's all of it.</h2>
+    <p>Vocab. Two readings. Two videos. A quiz. A discussion. Three MC questions. An assignment with a video inside it.</p>
+    <p>You did all of that in one session. Step away. Go play something. You earned it.</p>
+    <div class="btn-row" style="justify-content:center;margin-top:20px;">
+      <button class="btn btn-back btn-ghost" onclick="go('c14')">← Back</button>
+      <button class="btn btn-green" onclick="finishCascade()">Mark complete ✓</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+</main>
+
+<button id="pomo-toggle" onclick="togglePomo()">⏱ Focus Timer</button>
+<div id="pomo-panel">
+  <h4>Focus Timer</h4>
+  <p class="pomo-note">Different brains focus differently. Tool, not a rule.</p>
+  <div id="pomo-display">25:00</div>
+  <div id="pomo-label">Focus block</div>
+  <div class="pomo-presets">
+    <button class="pomo-preset active-preset" onclick="setPreset(25,5,this)">25 / 5</button>
+    <button class="pomo-preset" onclick="setPreset(10,2,this)">10 / 2</button>
+    <button class="pomo-preset" onclick="setPreset(45,10,this)">45 / 10</button>
+    <button class="pomo-preset" onclick="setPreset(0,0,this)">Custom</button>
+  </div>
+  <div id="custom-inputs" style="display:none;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+    <input id="custom-focus" type="number" min="1" max="90" placeholder="Focus min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <input id="custom-break" type="number" min="1" max="30" placeholder="Break min" style="width:48%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--text);font-size:13px;">
+    <button onclick="applyCustom()" style="width:100%;margin-top:4px;background:var(--accent);border:none;border-radius:6px;padding:7px;color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Set</button>
+  </div>
+  <div class="pomo-btns">
+    <button class="pomo-btn" id="pomo-start" onclick="startPomo()">Start</button>
+    <button class="pomo-btn" id="pomo-reset" onclick="resetPomo()">Reset</button>
+  </div>
+</div>
+
+<button id="calc-toggle" onclick="toggleCalc()">🔢 Calculator</button>
+<div id="calc-panel">
+  <div id="calc-display">0</div>
+  <div class="calc-grid">
+    <button class="calc-btn calc-clr" onclick="cCalcClear()">C</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('±')">±</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('%')">%</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('÷')">÷</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('7')">7</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('8')">8</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('9')">9</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('×')">×</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('4')">4</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('5')">5</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('6')">6</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('−')">−</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('1')">1</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('2')">2</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('3')">3</button>
+    <button class="calc-btn c-op" onclick="cCalcOp('+')">+</button>
+    <button class="calc-btn calc-num calc-zero" onclick="cCalcNum('0')">0</button>
+    <button class="calc-btn calc-num" onclick="cCalcNum('.')">.</button>
+    <button class="calc-btn calc-eq" onclick="cCalcEquals()">=</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>emailjs.init("B-4-8kwoZ57cJRsSj");</script>
+<script>
+const TOTAL_CARDS = 15;
+const cardOrder = ['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12','c13','c14','c15'];
+let currentIndex = 0;
+const sessionId = 'session-' + Date.now();
+const startTime = Date.now();
+const dingLog = [];
+const mcAnswered = {};
+
+function handleMC(cardId, btn, termKey) {
+  if (mcAnswered[cardId]) return;
+  mcAnswered[cardId] = true;
+  const isCorrect = btn.dataset.correct === 'true';
+  const card = document.getElementById(cardId);
+  card.querySelectorAll('.mc-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.correct === 'true') b.classList.add('mc-correct');
+  });
+  if (!isCorrect) btn.classList.add('mc-wrong');
+  const fb = document.getElementById('fb-' + cardId);
+  fb.textContent = isCorrect ? 'That\'s right.' : 'Not quite — the correct answer is highlighted above.';
+  fb.className = 'mc-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+  document.getElementById('next-' + cardId).style.display = 'block';
+  saveToFirebase({event:'mc_answered', term:termKey, correct:isCorrect});
+}
+
+function go(cardId) {
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  currentIndex = cardOrder.indexOf(cardId);
+  updateProgress();
+  saveToFirebase({event:'card_viewed', card:cardId});
+}
+
+function dingAndGo(eventName, nextCard) {
+  dingLog.push({event: eventName, at: new Date().toISOString()});
+  saveToFirebase({event:'ding', name:eventName});
+  go(nextCard);
+}
+
+function updateProgress() {
+  const num = currentIndex + 1;
+  document.getElementById('progress-text').textContent = `Card ${num} of ${TOTAL_CARDS}`;
+  document.getElementById('progress-bar').style.width = (num/TOTAL_CARDS*100).toFixed(1)+'%';
+}
+
+const DB_URL = "https://high-desert-socrates-default-rtdb.firebaseio.com";
+function saveToFirebase(data) {
+  fetch(`${DB_URL}/students/marick/game-dev/tech-reading/${sessionId}.json`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({...data, timestamp:new Date().toISOString()})
+  }).catch(()=>{});
+}
+
+function finishCascade() {
+  const elapsed = Math.round((Date.now()-startTime)/1000);
+  fetch(`${DB_URL}/students/marick/game-dev/tech-reading/${sessionId}.json`, {
+    method:'PATCH', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      completed: true, completedAt: new Date().toISOString(),
+      timeOnTaskSeconds: elapsed, student: 'Marick Bowen',
+      dingEvents: dingLog
+    })
+  }).catch(()=>{});
+  emailjs.send("service_nm36t4b","template_rakwrep",{
+    student_name:"Marick Bowen",
+    cascade_name:"Tech Reading — Routers + Firmware",
+    message:`Marick completed the full Unit 3 Tech session.\n\nIncludes: Routers + Firmware readings, 2 videos, Router Basics quiz, PC Problems discussion, Squeaky Clean reading + MC, and How to Clean a Dirty Gaming PC assignment.\n\nTime: ${Math.round(elapsed/60)} min\nSession: ${sessionId}\n\nDing events:\n${dingLog.map(d=>`${d.event} at ${d.at}`).join('\n')}`,
+    to_email:"KEStudents@proton.me"
+  }).catch(()=>{});
+  const btn = document.querySelector('.btn-green');
+  if(btn){btn.textContent='✓ Marked complete!';btn.disabled=true;btn.style.background='#2e9e68';}
+}
+
+// POMODORO
+let pomoFocus=25,pomoBreak=5,pomoSeconds=25*60,pomoRunning=false,pomoInterval=null,pomoIsBreak=false;
+function togglePomo(){document.getElementById('pomo-panel').classList.toggle('open');}
+function setPreset(f,b,btn){document.querySelectorAll('.pomo-preset').forEach(x=>x.classList.remove('active-preset'));btn.classList.add('active-preset');const cd=document.getElementById('custom-inputs');if(f===0){cd.style.display='flex';return;}cd.style.display='none';pomoFocus=f;pomoBreak=b;resetPomo();}
+function applyCustom(){const f=parseInt(document.getElementById('custom-focus').value);const b=parseInt(document.getElementById('custom-break').value);if(f>0)pomoFocus=f;if(b>0)pomoBreak=b;resetPomo();document.getElementById('custom-inputs').style.display='none';}
+function startPomo(){if(pomoRunning){clearInterval(pomoInterval);pomoRunning=false;document.getElementById('pomo-start').textContent='Start';}else{pomoRunning=true;document.getElementById('pomo-start').textContent='Pause';pomoInterval=setInterval(()=>{pomoSeconds--;if(pomoSeconds<0){pomoIsBreak=!pomoIsBreak;pomoSeconds=(pomoIsBreak?pomoBreak:pomoFocus)*60;document.getElementById('pomo-label').textContent=pomoIsBreak?'Break — step away':'Focus block';}renderPomo();},1000);}}
+function resetPomo(){clearInterval(pomoInterval);pomoRunning=false;pomoIsBreak=false;pomoSeconds=pomoFocus*60;document.getElementById('pomo-start').textContent='Start';document.getElementById('pomo-label').textContent='Focus block';renderPomo();}
+function renderPomo(){const m=Math.floor(pomoSeconds/60).toString().padStart(2,'0');const s=(pomoSeconds%60).toString().padStart(2,'0');document.getElementById('pomo-display').textContent=`${m}:${s}`;}
+
+// CALCULATOR
+let cVal='0',cPrev=null,cOp=null,cFresh=false;
+function toggleCalc(){document.getElementById('calc-panel').classList.toggle('open');}
+function cCalcDisp(){document.getElementById('calc-display').textContent=cVal;}
+function cCalcNum(n){if(cFresh||cVal==='0'){cVal=n;cFresh=false;}else cVal+=n;if(n==='.'&&cVal.split('.').length>2)cVal=cVal.slice(0,-1);cCalcDisp();}
+function cCalcOp(op){if(op==='±'){cVal=(parseFloat(cVal)*-1).toString();cCalcDisp();return;}if(op==='%'){cVal=(parseFloat(cVal)/100).toString();cCalcDisp();return;}cPrev=parseFloat(cVal);cOp=op;cFresh=true;}
+function cCalcEquals(){if(cPrev===null||cOp===null)return;const cur=parseFloat(cVal);let r;if(cOp==='+')r=cPrev+cur;if(cOp==='−')r=cPrev-cur;if(cOp==='×')r=cPrev*cur;if(cOp==='÷')r=cur!==0?cPrev/cur:'Error';cVal=r.toString();cPrev=null;cOp=null;cFresh=true;cCalcDisp();}
+function cCalcClear(){cVal='0';cPrev=null;cOp=null;cFresh=false;cCalcDisp();}
+
+saveToFirebase({startedAt:new Date().toISOString(),student:'Marick Bowen',cascade:'tech-reading-part-b'});
+updateProgress();
+</script>
+</body>
+</html>
